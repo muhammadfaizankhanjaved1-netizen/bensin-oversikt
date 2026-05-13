@@ -525,7 +525,10 @@ function kalenderNav(dir) {
 // ─── FORM ────────────────────────────────────────────────
 function setupFormListeners() {
   ['f-pris','f-liter'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updateCalcPreview);
+    const el = document.getElementById(id);
+    el.addEventListener('input', updateCalcPreview);
+    el.addEventListener('change', updateCalcPreview);
+    el.addEventListener('keyup', updateCalcPreview);
   });
 }
 
