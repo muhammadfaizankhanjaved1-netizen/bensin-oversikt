@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⛽ Bensin Tracker</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --card: #1a1a1a;
+    --card2: #222;
+    --accent: #f5a623;
+    --green: #4caf50;
+    --red: #f44336;
+    --text: #f0f0f0;
+    --muted: #888;
+    --border: #2e2e2e;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding-bottom: 80px; }
+
+  /* HEADER */
+  header { background: var(--card); padding: 16px 20px 0; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+  .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .header-row h1 { font-size: 20px; font-weight: 700; }
+  .sync-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .sync-btn:active { opacity: 0.6; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; }
+  .tab { flex: 1; text-align: center; padding: 10px 4px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* SECTIONS */
+  .section { display: none; padding: 16px; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .card-title { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin-bottom: 10px; }
+
+  /* PERIODE CARD */
+  .periode-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .periode-dates { font-size: 13px; color: var(--muted); }
+  .periode-dates span { color: var(--text); font-weight: 600; }
+  .ny-periode-btn { background: var(--border); border: none; color: var(--text); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+  .balance-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
+  .balance-row .label { color: var(--muted); }
+  .balance-row .val { font-weight: 600; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; font-size: 17px; font-weight: 700; }
+  .result-row .positive { color: var(--green); }
+  .result-row .negative { color: var(--red); }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .stat-box { background: var(--card2); border-radius: 10px; padding: 12px; text-align: center; }
+  .stat-val { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .form-group input { width: 100%; background: var(--card2); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 10px; font-size: 15px; outline: none; }
+  .form-group input:focus { border-color: var(--accent); }
+  .calc-preview { background: var(--card2); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 16px; font-size: 22px; font-weight: 700; color: var(--accent); min-height: 52px; }
+  .calc-preview .calc-sub { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+  .btn-primary { width: 100%; background: var(--accent); color: #000; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* HISTORIKK */
+  .filling-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .filling-item:last-child { border-bottom: none; }
+  .filling-left { display: flex; align-items: center; gap: 10px; }
+  .filling-icon { font-size: 22px; }
+  .filling-date { font-size: 15px; font-weight: 600; }
+  .filling-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .filling-right { text-align: right; }
+  .filling-cost { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .filling-liters { font-size: 12px; color: var(--muted); }
+  .delete-btn { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px 8px; margin-left: 6px; }
+  .delete-btn:active { color: var(--red); }
+  .empty-state { text-align: center; color: var(--muted); padding: 40px 20px; font-size: 14px; }
+
+  /* KALENDER */
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .cal-nav { background: var(--card2); border: none; color: var(--text); font-size: 20px; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; }
+  .cal-month { font-size: 16px; font-weight: 700; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day-name { text-align: center; font-size: 11px; color: var(--muted); padding: 4px; font-weight: 600; }
+  .cal-day { text-align: center; padding: 8px 4px; border-radius: 8px; font-size: 13px; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: default; }
+  .cal-day.empty { }
+  .cal-day.today { background: var(--card2); font-weight: 700; color: var(--accent); }
+  .cal-day.has-filling { background: rgba(245, 166, 35, 0.15); border: 1px solid rgba(245, 166, 35, 0.4); }
+  .cal-fuel { font-size: 14px; margin-top: 1px; }
+  .cal-day-detail { background: var(--card2); border-radius: 10px; padding: 12px 14px; margin-top: 12px; font-size: 13px; display: none; }
+  .cal-day-detail.visible { display: block; }
+
+  /* PERIODE MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; align-items: flex-end; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--card); border-radius: var(--radius) var(--radius) 0 0; padding: 20px; width: 100%; max-width: 500px; margin: 0 auto; }
+  .modal h2 { font-size: 18px; margin-bottom: 16px; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-secondary { flex: 1; background: var(--card2); color: var(--text); border: none; padding: 13px; border-radius: 10px; font-size: 15px; cursor: pointer; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--card); color: var(--text); padding: 10px 20px; border-radius: 20px; font-size: 14px; border: 1px solid var(--border); opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 300; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; padding: 8px 0 12px; z-index: 100; }
+  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-size: 10px; cursor: pointer; padding: 4px; transition: color .2s; }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn .icon { font-size: 22px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <h1>⛽ Bensin Tracker</h1>
+    <button class="sync-btn" onclick="syncData()">↻ Sync</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('oversikt', this)">Oversikt</div>
+    <div class="tab" onclick="switchTab('fyll', this)">Fyll</div>
+    <div class="tab" onclick="switchTab('historikk', this)">Historikk</div>
+    <div class="tab" onclick="switchTab('kalender', this)">Kalender</div>
+  </div>
+</header>
+
+<!-- OVERSIKT -->
+<div id="tab-oversikt" class="section active">
+  <div class="card">
+    <div class="card-title">Gjeldende periode</div>
+    <div class="periode-header">
+      <div class="periode-dates" id="periode-dates">Ingen periode startet</div>
+      <button class="ny-periode-btn" onclick="openPeriodeModal()">+ Ny periode</button>
+    </div>
+    <div class="balance-row">
+      <span class="label">Mottatt fra X</span>
+      <span class="val" id="ov-mottatt">— kr</span>
+    </div>
+    <div class="balance-row">
+      <span class="label">Brukt i perioden</span>
+      <span class="val" id="ov-brukt">— kr</span>
+    </div>
+    <hr class="divider">
+    <div class="result-row">
+      <span>Differanse</span>
+      <span id="ov-diff">—</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-val" id="stat-fyllinger">0</div>
+      <div class="stat-lbl">Fyllinger</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="stat-liter">0 L</div>
+      <div class="stat-lbl">Totalt</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="stat-snitt">—</div>
+      <div class="stat-lbl">Snitt kr/L</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Siste fylling</div>
+    <div id="siste-fylling" class="empty-state">Ingen fyllinger enda</div>
+  </div>
+</div>
+
+<!-- FYLL -->
+<div id="tab-fyll" class="section">
+  <div class="card">
+    <div class="card-title">Ny fylling</div>
+    <div class="form-group">
+      <label>Dato</label>
+      <input type="date" id="f-dato">
+    </div>
+    <div class="form-group">
+      <label>Literpris (kr)</label>
+      <input type="number" id="f-pris" placeholder="19.90" step="0.01" min="0" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <label>Antall liter</label>
+      <input type="number" id="f-liter" placeholder="25.0" step="0.1" min="0" inputmode="decimal">
+    </div>
+    <div class="calc-preview" id="calc-preview">
+      <div>— kr</div>
+    </div>
+    <button class="btn-primary" id="lagre-btn" onclick="lagreFylling()" disabled>Lagre fylling</button>
+  </div>
+</div>
+
+<!-- HISTORIKK -->
+<div id="tab-historikk" class="section">
+  <div class="card">
+    <div class="card-title">Alle fyllinger</div>
+    <div id="historikk-liste"><div class="empty-state">Ingen fyllinger registrert</div></div>
+  </div>
+</div>
+
+<!-- KALENDER -->
+<div id="tab-kalender" class="section">
+  <div class="card">
+    <div class="cal-header">
+      <button class="cal-nav" onclick="kalenderNav(-1)">‹</button>
+      <div class="cal-month" id="cal-month-label"></div>
+      <button class="cal-nav" onclick="kalenderNav(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-day-detail" id="cal-detail"></div>
+  </div>
+</div>
+
+<!-- PERIODE MODAL -->
+<div class="modal-overlay" id="periode-modal" onclick="closePeriodeModal(event)">
+  <div class="modal">
+    <h2>Ny bensinperiode</h2>
+    <div class="form-group">
+      <label>Startdato (da X betalte)</label>
+      <input type="date" id="p-dato">
+    </div>
+    <div class="form-group">
+      <label>Mottatt fra X (kr)</label>
+      <input type="number" id="p-mottatt" placeholder="700" inputmode="decimal">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closePeriodeModal()">Avbryt</button>
+      <button class="btn-primary" style="flex:1" onclick="lagrePeriode()">Start periode</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="switchTab('oversikt', null, this)">
+    <span class="icon">📊</span>Oversikt
+  </button>
+  <button class="nav-btn" onclick="switchTab('fyll', null, this)">
+    <span class="icon">⛽</span>Fyll
+  </button>
+  <button class="nav-btn" onclick="switchTab('historikk', null, this)">
+    <span class="icon">📋</span>Historikk
+  </button>
+  <button class="nav-btn" onclick="switchTab('kalender', null, this)">
+    <span class="icon">📅</span>Kalender
+  </button>
+</nav>
+
+<script>
+const JSONBIN_KEY = '$2a$10$YQtpXheoXVrQaXo3Sch4G..IWw/ZuAWYFnc1XPBxa82aBCieCR6XC';
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
+const BIN_ID_KEY = 'bensin_bin_id';
+
+let data = { perioder: [], fyllinger: [] };
+let calYear, calMonth;
+
+// ─── INIT ───────────────────────────────────────────────
+window.onload = async () => {
+  const today = new Date();
+  calYear = today.getFullYear();
+  calMonth = today.getMonth();
+  document.getElementById('f-dato').value = toDateString(today);
+
+  loadData();
+  renderAll();
+  setupFormListeners();
+};
+
+function toDateString(d) {
+  return d.toISOString().split('T')[0];
+}
+function formatDate(str) {
+  const [y, m, d] = str.split('-');
+  return `${d}.${m}.${y}`;
+}
+function formatKr(n) {
+  return n.toFixed(2).replace('.', ',') + ' kr';
+}
+function uuid() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+// ─── STORAGE: localStorage-first, JSONBin i bakgrunnen ──
+const LS_KEY = 'bensin_data';
+
+function loadData() {
+  const raw = localStorage.getItem(LS_KEY);
+  if (raw) {
+    try { data = JSON.parse(raw); } catch(e) {}
+  }
+  if (!data.perioder) data.perioder = [];
+  if (!data.fyllinger) data.fyllinger = [];
+  // Hent fra JSONBin stille i bakgrunnen
+  syncFromCloud();
+}
+
+function saveData() {
+  // Lagre lokalt ØYEBLIKKELIG
+  localStorage.setItem(LS_KEY, JSON.stringify(data));
+  // Synk til sky stille i bakgrunnen (ingen await, ingen blokkering)
+  syncToCloud();
+}
+
+async function syncFromCloud() {
+  let binId = localStorage.getItem(BIN_ID_KEY);
+  if (!binId) { binId = await createBin(); return; }
+  try {
+    const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const cloud = json.record;
+      if (!cloud.perioder) cloud.perioder = [];
+      if (!cloud.fyllinger) cloud.fyllinger = [];
+      // Merge: bruk sky-data hvis den har flere fyllinger
+      const localCount = data.fyllinger.length + data.perioder.length;
+      const cloudCount = cloud.fyllinger.length + cloud.perioder.length;
+      if (cloudCount > localCount) {
+        data = cloud;
+        localStorage.setItem(LS_KEY, JSON.stringify(data));
+        renderAll();
+      }
+    }
+  } catch (e) {}
+}
+
+async function createBin() {
+  try {
+    const res = await fetch(JSONBIN_BASE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY,
+        'X-Bin-Name': 'bensin-tracker'
+      },
+      body: JSON.stringify({ perioder: [], fyllinger: [] })
+    });
+    if (res.ok) {
+      const json = await res.json();
+      localStorage.setItem(BIN_ID_KEY, json.metadata.id);
+    }
+  } catch (e) {}
+}
+
+async function syncToCloud() {
+  const binId = localStorage.getItem(BIN_ID_KEY);
+  if (!binId) return;
+  try {
+    await fetch(`${JSONBIN_BASE}/${binId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {}
+}
+
+async function syncData() {
+  showToast('⟳ Synkroniserer...');
+  await syncFromCloud();
+  renderAll();
+  showToast('✓ Synkronisert');
+}
+
+// ─── RENDER ─────────────────────────────────────────────
+function renderAll() {
+  renderOversikt();
+  renderHistorikk();
+  renderKalender();
+}
+
+function renderOversikt() {
+  const aktiv = getAktivPeriode();
+  const fillingerIPeriode = aktiv
+    ? data.fyllinger.filter(f => f.dato >= aktiv.startDato)
+    : [];
+
+  const totalBrukt = fillingerIPeriode.reduce((s, f) => s + f.kostnad, 0);
+  const mottatt = aktiv ? aktiv.mottatt : 0;
+  const diff = mottatt - totalBrukt;
+
+  if (aktiv) {
+    document.getElementById('periode-dates').innerHTML =
+      `Fra: <span>${formatDate(aktiv.startDato)}</span>`;
+    document.getElementById('ov-mottatt').textContent = formatKr(mottatt);
+    document.getElementById('ov-brukt').textContent = formatKr(totalBrukt);
+    const diffEl = document.getElementById('ov-diff');
+    diffEl.textContent = (diff >= 0 ? '+' : '') + formatKr(diff);
+    diffEl.className = diff >= 0 ? 'positive' : 'negative';
+  }
+
+  // Stats (alle fyllinger totalt)
+  const alle = data.fyllinger;
+  const totLiter = alle.reduce((s, f) => s + f.liter, 0);
+  const totKr = alle.reduce((s, f) => s + f.kostnad, 0);
+  const snitt = alle.length > 0 ? totKr / totLiter : 0;
+
+  document.getElementById('stat-fyllinger').textContent = alle.length;
+  document.getElementById('stat-liter').textContent = totLiter.toFixed(1) + ' L';
+  document.getElementById('stat-snitt').textContent = snitt > 0 ? snitt.toFixed(2).replace('.', ',') : '—';
+
+  // Siste fylling
+  const sistEl = document.getElementById('siste-fylling');
+  if (alle.length === 0) {
+    sistEl.className = 'empty-state';
+    sistEl.textContent = 'Ingen fyllinger enda';
+  } else {
+    const s = [...alle].sort((a, b) => b.dato.localeCompare(a.dato))[0];
+    sistEl.className = '';
+    sistEl.innerHTML = `
+      <div class="filling-item" style="border:none;padding:0">
+        <div class="filling-left">
+          <div class="filling-icon">⛽</div>
+          <div>
+            <div class="filling-date">${formatDate(s.dato)}</div>
+            <div class="filling-detail">${s.liter.toFixed(1)} L × ${s.prisPerLiter.toFixed(2).replace('.', ',')} kr/L</div>
+          </div>
+        </div>
+        <div class="filling-right">
+          <div class="filling-cost">${formatKr(s.kostnad)}</div>
+        </div>
+      </div>`;
+  }
+}
+
+function renderHistorikk() {
+  const el = document.getElementById('historikk-liste');
+  if (data.fyllinger.length === 0) {
+    el.innerHTML = '<div class="empty-state">Ingen fyllinger registrert</div>';
+    return;
+  }
+  const sorted = [...data.fyllinger].sort((a, b) => b.dato.localeCompare(a.dato));
+  el.innerHTML = sorted.map(f => `
+    <div class="filling-item">
+      <div class="filling-left">
+        <div class="filling-icon">⛽</div>
+        <div>
+          <div class="filling-date">${formatDate(f.dato)}</div>
+          <div class="filling-detail">${f.liter.toFixed(1)} L × ${f.prisPerLiter.toFixed(2).replace('.', ',')} kr/L</div>
+        </div>
+      </div>
+      <div class="filling-right" style="display:flex;align-items:center">
+        <div>
+          <div class="filling-cost">${formatKr(f.kostnad)}</div>
+          <div class="filling-liters">${f.liter.toFixed(1)} liter</div>
+        </div>
+        <button class="delete-btn" onclick="slettFylling('${f.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderKalender() {
+  const monthNames = ['Januar','Februar','Mars','April','Mai','Juni','Juli','August','September','Oktober','November','Desember'];
+  const dayNames = ['Ma','Ti','On','To','Fr','Lø','Sø'];
+
+  document.getElementById('cal-month-label').textContent = `${monthNames[calMonth]} ${calYear}`;
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Mon=0
+
+  for (let i = 0; i < startDow; i++) {
+    grid.innerHTML += `<div class="cal-day empty"></div>`;
+  }
+
+  const today = toDateString(new Date());
+  const fillingsByDate = {};
+  data.fyllinger.forEach(f => {
+    if (!fillingsByDate[f.dato]) fillingsByDate[f.dato] = [];
+    fillingsByDate[f.dato].push(f);
+  });
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === today;
+    const fillings = fillingsByDate[dateStr] || [];
+    const hasFilling = fillings.length > 0;
+    const totalKr = fillings.reduce((s, f) => s + f.kostnad, 0);
+
+    let cls = 'cal-day';
+    if (isToday) cls += ' today';
+    if (hasFilling) cls += ' has-filling';
+
+    grid.innerHTML += `
+      <div class="${cls}" onclick="calDayClick('${dateStr}', ${hasFilling})">
+        <div>${d}</div>
+        ${hasFilling ? `<div class="cal-fuel" title="${formatKr(totalKr)}">⛽</div>` : ''}
+      </div>`;
+  }
+}
+
+function calDayClick(date, hasFilling) {
+  const detail = document.getElementById('cal-detail');
+  if (!hasFilling) { detail.classList.remove('visible'); return; }
+  const fillings = data.fyllinger.filter(f => f.dato === date);
+  detail.innerHTML = `<strong>${formatDate(date)}</strong><br>` +
+    fillings.map(f => `⛽ ${f.liter.toFixed(1)} L × ${f.prisPerLiter.toFixed(2).replace('.', ',')} kr/L = <strong>${formatKr(f.kostnad)}</strong>`).join('<br>');
+  detail.classList.add('visible');
+}
+
+function kalenderNav(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  document.getElementById('cal-detail').classList.remove('visible');
+  renderKalender();
+}
+
+// ─── FORM ────────────────────────────────────────────────
+function setupFormListeners() {
+  ['f-pris','f-liter'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateCalcPreview);
+  });
+}
+
+function updateCalcPreview() {
+  const pris = parseFloat(document.getElementById('f-pris').value);
+  const liter = parseFloat(document.getElementById('f-liter').value);
+  const el = document.getElementById('calc-preview');
+  const btn = document.getElementById('lagre-btn');
+  if (pris > 0 && liter > 0) {
+    const total = pris * liter;
+    el.innerHTML = `<div>${formatKr(total)}</div><div class="calc-sub">${liter.toFixed(1)} L × ${pris.toFixed(2).replace('.', ',')} kr/L</div>`;
+    btn.disabled = false;
+  } else {
+    el.innerHTML = `<div>— kr</div>`;
+    btn.disabled = true;
+  }
+}
+
+async function lagreFylling() {
+  const dato = document.getElementById('f-dato').value;
+  const pris = parseFloat(document.getElementById('f-pris').value);
+  const liter = parseFloat(document.getElementById('f-liter').value);
+
+  if (!dato || !pris || !liter) { showToast('Fyll inn alle felt'); return; }
+
+  const fylling = { id: uuid(), dato, prisPerLiter: pris, liter, kostnad: parseFloat((pris * liter).toFixed(2)) };
+  data.fyllinger.push(fylling);
+  saveData();
+  renderAll();
+  showToast('✓ Fylling lagret');
+
+  document.getElementById('f-pris').value = '';
+  document.getElementById('f-liter').value = '';
+  document.getElementById('calc-preview').innerHTML = '<div>— kr</div>';
+  document.getElementById('lagre-btn').disabled = true;
+  switchTab('oversikt');
+}
+
+async function slettFylling(id) {
+  if (!confirm('Slette denne fyllingen?')) return;
+  data.fyllinger = data.fyllinger.filter(f => f.id !== id);
+  saveData();
+  renderAll();
+  showToast('Fylling slettet');
+}
+
+// ─── PERIODE ─────────────────────────────────────────────
+function getAktivPeriode() {
+  if (data.perioder.length === 0) return null;
+  return data.perioder[data.perioder.length - 1];
+}
+
+function openPeriodeModal() {
+  document.getElementById('p-dato').value = toDateString(new Date());
+  document.getElementById('p-mottatt').value = '';
+  document.getElementById('periode-modal').classList.add('open');
+}
+
+function closePeriodeModal(e) {
+  if (!e || e.target.classList.contains('modal-overlay')) {
+    document.getElementById('periode-modal').classList.remove('open');
+  }
+}
+
+async function lagrePeriode() {
+  const dato = document.getElementById('p-dato').value;
+  const mottatt = parseFloat(document.getElementById('p-mottatt').value);
+  if (!dato || !mottatt) { showToast('Fyll inn begge felt'); return; }
+
+  data.perioder.push({ id: uuid(), startDato: dato, mottatt });
+  saveData();
+  renderAll();
+  closePeriodeModal();
+  showToast('✓ Ny periode startet');
+}
+
+// ─── TABS & UTILS ────────────────────────────────────────
+function switchTab(name, tabEl, navEl) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+
+  if (tabEl) tabEl.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+
+  // sync top tabs with bottom nav
+  const tabIndex = ['oversikt','fyll','historikk','kalender'].indexOf(name);
+  document.querySelectorAll('.tab')[tabIndex]?.classList.add('active');
+  document.querySelectorAll('.nav-btn')[tabIndex]?.classList.add('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
