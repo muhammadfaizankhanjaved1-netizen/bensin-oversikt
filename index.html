@@ -367,11 +367,21 @@ async function syncFromCloud() {
       const cloud = json.record;
       if (!cloud.perioder) cloud.perioder = [];
       if (!cloud.fyllinger) cloud.fyllinger = [];
-      // Merge: bruk sky-data hvis den har flere fyllinger
-      const localCount = data.fyllinger.length + data.perioder.length;
-      const cloudCount = cloud.fyllinger.length + cloud.perioder.length;
-      if (cloudCount > localCount) {
-        data = cloud;
+      // Merge: legg til alt fra sky som ikke finnes lokalt (ID-basert, mister aldri data)
+      let changed = false;
+      for (const cf of cloud.fyllinger) {
+        if (!data.fyllinger.find(lf => lf.id === cf.id)) {
+          data.fyllinger.push(cf);
+          changed = true;
+        }
+      }
+      for (const cp of cloud.perioder) {
+        if (!data.perioder.find(lp => lp.id === cp.id)) {
+          data.perioder.push(cp);
+          changed = true;
+        }
+      }
+      if (changed) {
         localStorage.setItem(LS_KEY, JSON.stringify(data));
         renderAll();
       }
@@ -632,7 +642,10 @@ function getAktivPeriode() {
 }
 
 function openPeriodeModal() {
-  document.getElementById('p-dato').value = toDateString(new Date());
+  const earliest = data.fyllinger.length > 0
+    ? [...data.fyllinger].sort((a, b) => a.dato.localeCompare(b.dato))[0].dato
+    : toDateString(new Date());
+  document.getElementById('p-dato').value = earliest;
   document.getElementById('p-mottatt').value = '';
   document.getElementById('periode-modal').classList.add('open');
 }
