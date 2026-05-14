@@ -31,6 +31,8 @@
   header { background: var(--card); padding: 16px 20px 0; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
   .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   .header-row h1 { font-size: 20px; font-weight: 700; }
+  .app-logo-icon { font-size: 1.9rem; width: 46px; height: 46px; background: rgba(245,166,35,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .app-logo-wrap { display: flex; align-items: center; gap: 12px; }
   .sync-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; }
   .sync-btn:active { opacity: 0.6; }
 
@@ -128,7 +130,10 @@
 
 <header>
   <div class="header-row">
-    <h1>⛽ Bensin Tracker</h1>
+    <div class="app-logo-wrap">
+      <div class="app-logo-icon">⛽</div>
+      <h1>Bensin Tracker</h1>
+    </div>
     <button class="sync-btn" onclick="syncData()">↻ Sync</button>
   </div>
   <div class="tabs">
