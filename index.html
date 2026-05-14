@@ -339,9 +339,25 @@ function saveData() {
   syncToCloud();
 }
 
+function injectHistoricalFyllinger() {
+  const hist = [
+    { id: 'hist-20260501', dato: '2026-05-01', prisPerLiter: 20.53, liter: 9.5,  kostnad: 195 },
+    { id: 'hist-20260502', dato: '2026-05-02', prisPerLiter: 17.50, liter: 4,    kostnad: 70  },
+    { id: 'hist-20260510', dato: '2026-05-10', prisPerLiter: 20.32, liter: 11.81, kostnad: 240 }
+  ];
+  let added = false;
+  for (const f of hist) {
+    if (!data.fyllinger.find(x => x.dato === f.dato)) {
+      data.fyllinger.push(f);
+      added = true;
+    }
+  }
+  if (added) { saveData(); renderAll(); }
+}
+
 async function syncFromCloud() {
   let binId = localStorage.getItem(BIN_ID_KEY);
-  if (!binId) { binId = await createBin(); return; }
+  if (!binId) { binId = await createBin(); injectHistoricalFyllinger(); return; }
   try {
     const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
       headers: { 'X-Master-Key': JSONBIN_KEY }
@@ -361,6 +377,7 @@ async function syncFromCloud() {
       }
     }
   } catch (e) {}
+  injectHistoricalFyllinger();
 }
 
 async function createBin() {
