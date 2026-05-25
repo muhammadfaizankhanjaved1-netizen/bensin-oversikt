@@ -284,7 +284,7 @@
 <script>
 const JSONBIN_KEY = '$2a$10$YQtpXheoXVrQaXo3Sch4G..IWw/ZuAWYFnc1XPBxa82aBCieCR6XC';
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
-const BIN_ID_KEY = 'bensin_bin_id';
+const BIN_ID = '6a13ecb86877513b27cb5237';
 
 let data = { perioder: [], fyllinger: [] };
 let calYear, calMonth;
@@ -328,14 +328,11 @@ function loadData() {
   }
   if (!data.perioder) data.perioder = [];
   if (!data.fyllinger) data.fyllinger = [];
-  // Hent fra JSONBin stille i bakgrunnen
   syncFromCloud();
 }
 
 function saveData() {
-  // Lagre lokalt ØYEBLIKKELIG
   localStorage.setItem(LS_KEY, JSON.stringify(data));
-  // Synk til sky stille i bakgrunnen (ingen await, ingen blokkering)
   syncToCloud();
 }
 
@@ -356,10 +353,8 @@ function injectHistoricalFyllinger() {
 }
 
 async function syncFromCloud() {
-  let binId = localStorage.getItem(BIN_ID_KEY);
-  if (!binId) { binId = await createBin(); injectHistoricalFyllinger(); return; }
   try {
-    const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
+    const res = await fetch(`${JSONBIN_BASE}/${BIN_ID}/latest`, {
       headers: { 'X-Master-Key': JSONBIN_KEY }
     });
     if (res.ok) {
@@ -367,7 +362,6 @@ async function syncFromCloud() {
       const cloud = json.record;
       if (!cloud.perioder) cloud.perioder = [];
       if (!cloud.fyllinger) cloud.fyllinger = [];
-      // Merge: legg til alt fra sky som ikke finnes lokalt (ID-basert, mister aldri data)
       let changed = false;
       for (const cf of cloud.fyllinger) {
         if (!data.fyllinger.find(lf => lf.id === cf.id)) {
@@ -390,29 +384,9 @@ async function syncFromCloud() {
   injectHistoricalFyllinger();
 }
 
-async function createBin() {
-  try {
-    const res = await fetch(JSONBIN_BASE, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': JSONBIN_KEY,
-        'X-Bin-Name': 'bensin-tracker'
-      },
-      body: JSON.stringify({ perioder: [], fyllinger: [] })
-    });
-    if (res.ok) {
-      const json = await res.json();
-      localStorage.setItem(BIN_ID_KEY, json.metadata.id);
-    }
-  } catch (e) {}
-}
-
 async function syncToCloud() {
-  const binId = localStorage.getItem(BIN_ID_KEY);
-  if (!binId) return;
   try {
-    await fetch(`${JSONBIN_BASE}/${binId}`, {
+    await fetch(`${JSONBIN_BASE}/${BIN_ID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
       body: JSON.stringify(data)
