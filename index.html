@@ -28,19 +28,14 @@
   input[type="date"] { -webkit-appearance: none; appearance: none; max-width: 100%; }
 
   /* HEADER */
-  header { background: var(--card); padding: 16px 20px 0; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
-  .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  header { background: var(--card); padding: 16px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+  .header-row { display: flex; align-items: center; justify-content: space-between; }
   .header-row h1 { font-size: 20px; font-weight: 700; }
   .app-logo-icon { width: 52px; height: 52px; background: rgba(245,166,35,0.15); border-radius: 14px; border: 1px solid rgba(245,166,35,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .app-logo-icon img { width: 34px; height: 34px; display: block; }
   .app-logo-wrap { display: flex; align-items: center; gap: 12px; }
   .sync-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; }
   .sync-btn:active { opacity: 0.6; }
-
-  /* TABS */
-  .tabs { display: flex; gap: 4px; }
-  .tab { flex: 1; text-align: center; padding: 10px 4px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
   /* SECTIONS */
   .section { display: none; padding: 16px; }
@@ -87,7 +82,7 @@
   .filling-icon { font-size: 22px; }
   .filling-date { font-size: 15px; font-weight: 600; }
   .filling-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .filling-right { text-align: right; }
+  .filling-right { text-align: right; white-space: nowrap; flex-shrink: 0; }
   .filling-cost { font-size: 16px; font-weight: 700; color: var(--accent); }
   .filling-liters { font-size: 12px; color: var(--muted); }
   .delete-btn { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px 8px; margin-left: 6px; }
@@ -100,11 +95,13 @@
   .cal-month { font-size: 16px; font-weight: 700; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .cal-day-name { text-align: center; font-size: 11px; color: var(--muted); padding: 4px; font-weight: 600; }
-  .cal-day { text-align: center; padding: 8px 4px; border-radius: 8px; font-size: 13px; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: default; }
-  .cal-day.empty { }
+  .cal-day { text-align: center; padding: 6px 4px; border-radius: 8px; font-size: 13px; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: default; }
   .cal-day.today { background: var(--card2); font-weight: 700; color: var(--accent); }
-  .cal-day.has-filling { background: rgba(245, 166, 35, 0.15); border: 1px solid rgba(245, 166, 35, 0.4); }
-  .cal-fuel { font-size: 14px; margin-top: 1px; }
+  .cal-day.has-filling { background: rgba(244, 67, 54, 0.15); border: 1px solid rgba(244, 67, 54, 0.4); }
+  .cal-day.has-period { background: rgba(76, 175, 80, 0.15); border: 1px solid rgba(76, 175, 80, 0.4); }
+  .cal-day.has-filling.has-period { background: linear-gradient(135deg, rgba(244,67,54,0.15) 50%, rgba(76,175,80,0.15) 50%); border: 1px solid rgba(244, 67, 54, 0.4); }
+  .cal-amount { font-size: 10px; color: #f44336; margin-top: 2px; font-weight: 600; line-height: 1.1; }
+  .cal-period-dot { font-size: 10px; color: var(--green); margin-top: 1px; font-weight: 600; line-height: 1.1; }
   .cal-day-detail { background: var(--card2); border-radius: 10px; padding: 12px 14px; margin-top: 12px; font-size: 13px; display: none; }
   .cal-day-detail.visible { display: block; }
 
@@ -116,15 +113,54 @@
   .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
   .btn-secondary { flex: 1; background: var(--card2); color: var(--text); border: none; padding: 13px; border-radius: 10px; font-size: 15px; cursor: pointer; }
 
+  /* SLETT PERIODE BTN */
+  .slett-periode-btn { background: none; border: 1px solid var(--red); color: var(--red); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+  .slett-periode-btn:active { opacity: 0.6; }
+
+  /* TOTAL OVERSIKT */
+  .to-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .to-col { background: var(--card2); border-radius: 10px; padding: 12px 6px; text-align: center; }
+  .to-col-icon { font-size: 20px; margin-bottom: 4px; }
+  .to-col-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; line-height: 1.3; }
+  .to-col-val { font-size: 14px; font-weight: 700; }
+  .to-col-val.c-accent { color: var(--accent); }
+  .to-col-val.c-green { color: var(--green); }
+  .to-col-val.c-red { color: var(--red); }
+
   /* TOAST */
   .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--card); color: var(--text); padding: 10px 20px; border-radius: 20px; font-size: 14px; border: 1px solid var(--border); opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 300; white-space: nowrap; }
   .toast.show { opacity: 1; }
 
   /* BOTTOM NAV */
   .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); z-index: 100; }
-  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-size: 10px; cursor: pointer; padding: 4px; transition: color .2s; }
+  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; color: var(--muted); font-size: 9px; cursor: pointer; padding: 4px 2px; transition: color .2s; }
   .nav-btn.active { color: var(--accent); }
   .nav-btn .icon { font-size: 22px; }
+
+  /* KVITTERING SCAN */
+  .kvittering-area { border: 1.5px dashed var(--border); border-radius: 10px; padding: 12px; margin-bottom: 16px; }
+  .kvittering-btn { width: 100%; background: var(--card2); color: var(--text); border: 1px solid var(--border); padding: 13px; border-radius: 10px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .kvittering-btn:active { opacity: 0.7; }
+  .kvittering-preview-img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; margin-top: 10px; background: var(--card2); }
+  .ocr-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-ocr { flex: 1; background: var(--accent); color: #000; border: none; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-ocr:active { opacity: 0.8; }
+  .btn-ocr:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-fjern { background: var(--card2); color: var(--muted); border: 1px solid var(--border); padding: 11px 14px; border-radius: 10px; font-size: 14px; cursor: pointer; }
+  .ocr-loading-txt { text-align: center; padding: 10px 0 2px; color: var(--muted); font-size: 13px; }
+  .ocr-result-badge { background: rgba(76,175,80,0.12); border: 1px solid rgba(76,175,80,0.3); border-radius: 8px; padding: 7px 12px; font-size: 13px; color: var(--green); margin-top: 8px; text-align: center; }
+
+  /* KVITTERING THUMBNAIL I HISTORIKK */
+  .receipt-thumb-wrap { padding-left: 42px; margin-top: 6px; margin-bottom: 2px; }
+  .receipt-thumb { height: 60px; width: auto; max-width: 110px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  .receipt-thumb:active { opacity: 0.7; }
+
+  /* FULLSCREEN BILDE */
+  .img-fullscreen { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 500; align-items: center; justify-content: center; overflow: hidden; }
+  .img-fullscreen.open { display: flex; }
+  .img-fullscreen img { max-width: 95vw; max-height: 88vh; object-fit: contain; border-radius: 8px; touch-action: none; transition: transform 0.12s ease; user-select: none; will-change: transform; }
+  .img-fullscreen-close { color: #fff; font-size: 28px; position: absolute; top: 18px; right: 20px; background: none; border: none; cursor: pointer; line-height: 1; z-index: 501; }
+  .zoom-hint { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.5); font-size: 12px; pointer-events: none; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -137,12 +173,6 @@
     </div>
     <button class="sync-btn" onclick="syncData()">↻ Sync</button>
   </div>
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('oversikt', this)">Oversikt</div>
-    <div class="tab" onclick="switchTab('fyll', this)">Fyll</div>
-    <div class="tab" onclick="switchTab('historikk', this)">Historikk</div>
-    <div class="tab" onclick="switchTab('kalender', this)">Kalender</div>
-  </div>
 </header>
 
 <!-- OVERSIKT -->
@@ -151,11 +181,18 @@
     <div class="card-title">Gjeldende periode</div>
     <div class="periode-header">
       <div class="periode-dates" id="periode-dates">Ingen periode startet</div>
-      <button class="ny-periode-btn" onclick="openPeriodeModal()">+ Ny periode</button>
+      <div style="display:flex;gap:6px">
+        <button class="slett-periode-btn" id="slett-periode-btn" onclick="slettAktivPeriode()" style="display:none">✕ Slett</button>
+        <button class="ny-periode-btn" onclick="openPeriodeModal()">+ Ny periode</button>
+      </div>
     </div>
     <div class="balance-row">
-      <span class="label">Mottatt fra X</span>
+      <span class="label">Periode betaling</span>
       <span class="val" id="ov-mottatt">— kr</span>
+    </div>
+    <div class="balance-row" id="ov-betaling-row" style="display:none">
+      <span class="label">Skyldig betaling</span>
+      <span class="val c-green" id="ov-betaling">— kr</span>
     </div>
     <div class="balance-row">
       <span class="label">Brukt i perioden</span>
@@ -193,6 +230,29 @@
 <div id="tab-fyll" class="section">
   <div class="card">
     <div class="card-title">Ny fylling</div>
+
+    <!-- Kvittering scan -->
+    <div class="kvittering-area">
+      <input type="file" id="kvittering-input" accept="image/*" style="display:none" onchange="handleKvittering(this)">
+      <button class="kvittering-btn" id="kvittering-main-btn" onclick="document.getElementById('kvittering-input').click()">
+        <span style="font-size:19px">📷</span> Skann kvittering
+      </button>
+      <div id="kvittering-compress-loading" class="ocr-loading-txt" style="display:none">⟳ Laster bilde...</div>
+      <div id="kvittering-preview" style="display:none">
+        <img id="kvittering-img" class="kvittering-preview-img">
+        <div class="ocr-actions">
+          <button class="btn-ocr" id="ocr-btn" onclick="analyserKvittering()">✦ Les kvittering</button>
+          <button class="btn-fjern" onclick="fjernKvittering()">✕</button>
+        </div>
+        <div id="ocr-loading" class="ocr-loading-txt" style="display:none">⟳ Analyserer...</div>
+        <div id="ocr-result" class="ocr-result-badge" style="display:none">✓ Felt utfylt automatisk — sjekk og lagre</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Stasjon (valgfritt)</label>
+      <input type="text" id="f-stasjon" placeholder="f.eks. Circle K, Esso">
+    </div>
     <div class="form-group">
       <label>Dato</label>
       <input type="date" id="f-dato">
@@ -233,6 +293,43 @@
   </div>
 </div>
 
+<!-- KONTO -->
+<div id="tab-konto" class="section">
+  <div class="card">
+    <div class="card-title">Parallell oversikt — alle perioder</div>
+    <div class="to-grid">
+      <div class="to-col">
+        <div class="to-col-icon">⛽</div>
+        <div class="to-col-lbl">Fyllinger totalt</div>
+        <div class="to-col-val c-accent" id="to-fyllt">—</div>
+      </div>
+      <div class="to-col">
+        <div class="to-col-icon">💰</div>
+        <div class="to-col-lbl">Betalt av X</div>
+        <div class="to-col-val c-green" id="to-betalt">—</div>
+      </div>
+      <div class="to-col">
+        <div class="to-col-icon">💸</div>
+        <div class="to-col-lbl">Eget konto</div>
+        <div class="to-col-val" id="to-eget">—</div>
+      </div>
+    </div>
+    <hr class="divider" style="margin-top:12px">
+    <div class="balance-row" style="margin-top:4px">
+      <span class="label">Skyldig fra X</span>
+      <span class="val" id="to-skyldig">—</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>Betalinger</span>
+      <button class="ny-periode-btn" onclick="openBetalingModal()">+ Skyldig betaling</button>
+    </div>
+    <div id="konto-perioder-liste"><div class="empty-state">Ingen perioder eller betalinger</div></div>
+  </div>
+</div>
+
 <!-- PERIODE MODAL -->
 <div class="modal-overlay" id="periode-modal" onclick="closePeriodeModal(event)">
   <div class="modal">
@@ -252,7 +349,37 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- SLETT PERIODE MODAL -->
+<div class="modal-overlay" id="slett-periode-modal" onclick="closeSlettPeriodeModal(event)">
+  <div class="modal">
+    <h2>Slette periode?</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:4px" id="slett-periode-info"></p>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeSlettPeriodeModal()">Avbryt</button>
+      <button class="btn-primary" style="flex:1;background:var(--red)" id="slett-periode-bekreft">Slett</button>
+    </div>
+  </div>
+</div>
+
+<!-- SKYLDIG BETALING MODAL -->
+<div class="modal-overlay" id="betaling-modal" onclick="closeBetalingModal(event)">
+  <div class="modal">
+    <h2>Skyldig betaling</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:14px">X betaler ned det hun skylder — uten å starte ny periode.</p>
+    <div class="form-group">
+      <label>Dato</label>
+      <input type="date" id="b-dato">
+    </div>
+    <div class="form-group">
+      <label>Beløp (kr)</label>
+      <input type="number" id="b-belop" placeholder="530" inputmode="decimal">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeBetalingModal()">Avbryt</button>
+      <button class="btn-primary" style="flex:1" onclick="lagreBetaling()">Lagre</button>
+    </div>
+  </div>
+</div>
 
 <!-- SLETT MODAL -->
 <div class="modal-overlay" id="slett-modal" onclick="closeSlettModal(event)">
@@ -266,18 +393,30 @@
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
+<!-- FULLSCREEN KVITTERINGSBILDE -->
+<div class="img-fullscreen" id="img-fullscreen">
+  <button class="img-fullscreen-close" onclick="closeFullscreen()">✕</button>
+  <img id="fullscreen-img" src="">
+  <div class="zoom-hint" id="zoom-hint">Dobbelttrykk for å zoome</div>
+</div>
+
 <nav class="bottom-nav">
-  <button class="nav-btn active" onclick="switchTab('oversikt', null, this)">
+  <button class="nav-btn active" onclick="switchTab('oversikt', this)">
     <span class="icon">📊</span>Oversikt
   </button>
-  <button class="nav-btn" onclick="switchTab('fyll', null, this)">
+  <button class="nav-btn" onclick="switchTab('fyll', this)">
     <span class="icon">⛽</span>Fyll
   </button>
-  <button class="nav-btn" onclick="switchTab('historikk', null, this)">
+  <button class="nav-btn" onclick="switchTab('historikk', this)">
     <span class="icon">📋</span>Historikk
   </button>
-  <button class="nav-btn" onclick="switchTab('kalender', null, this)">
+  <button class="nav-btn" onclick="switchTab('kalender', this)">
     <span class="icon">📅</span>Kalender
+  </button>
+  <button class="nav-btn" onclick="switchTab('konto', this)">
+    <span class="icon">💰</span>Konto
   </button>
 </nav>
 
@@ -286,8 +425,213 @@ const JSONBIN_KEY = '$2a$10$YQtpXheoXVrQaXo3Sch4G..IWw/ZuAWYFnc1XPBxa82aBCieCR6X
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
 const BIN_ID = '6a13ecb86877513b27cb5237';
 
-let data = { perioder: [], fyllinger: [] };
+let data = { perioder: [], fyllinger: [], betalinger: [] };
 let calYear, calMonth;
+let pendingBildeFull = null;
+let pendingBildeThumb = null;
+let pendingBildeFullUrl = null;
+
+// ─── UTILS ──────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ─── BILDE-LAGRING (localStorage, ikke JSONBin) ─────────
+const LS_BILDER = 'bensin_bilder';
+function loadBilder() {
+  try { return JSON.parse(localStorage.getItem(LS_BILDER)) || {}; } catch(e) { return {}; }
+}
+function saveBildeLocal(id, thumbDataUrl, fullDataUrl) {
+  const b = loadBilder();
+  b[id] = thumbDataUrl;
+  if (fullDataUrl) b[id + '_full'] = fullDataUrl;
+  localStorage.setItem(LS_BILDER, JSON.stringify(b));
+}
+function deleteBildeLocal(id) {
+  const b = loadBilder();
+  delete b[id];
+  delete b[id + '_full'];
+  localStorage.setItem(LS_BILDER, JSON.stringify(b));
+}
+
+// ─── BILDEKOMPRIMERING ──────────────────────────────────
+function compressImage(file, maxPx, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxPx || h > maxPx) {
+        if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+        else { w = Math.round(w * maxPx / h); h = maxPx; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Kunne ikke laste bildet'));
+    };
+    img.src = url;
+  });
+}
+
+// ─── KVITTERING-HÅNDTERING ──────────────────────────────
+async function handleKvittering(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  document.getElementById('kvittering-main-btn').style.display = 'none';
+  document.getElementById('kvittering-preview').style.display = 'none';
+  document.getElementById('kvittering-compress-loading').style.display = 'block';
+
+  try {
+    const ocrDataUrl = await compressImage(file, 900, 0.88);
+    const thumbDataUrl = await compressImage(file, 180, 0.80);
+    input.value = '';
+
+    pendingBildeFull = ocrDataUrl.split(',')[1];
+    pendingBildeThumb = thumbDataUrl;
+    pendingBildeFullUrl = ocrDataUrl;
+
+    document.getElementById('kvittering-img').src = ocrDataUrl;
+    document.getElementById('kvittering-compress-loading').style.display = 'none';
+    document.getElementById('kvittering-preview').style.display = 'block';
+    document.getElementById('ocr-loading').style.display = 'none';
+    document.getElementById('ocr-result').style.display = 'none';
+    document.getElementById('ocr-btn').disabled = false;
+  } catch(e) {
+    input.value = '';
+    document.getElementById('kvittering-compress-loading').style.display = 'none';
+    document.getElementById('kvittering-main-btn').style.display = 'flex';
+    showToast('Klarte ikke laste bildet');
+  }
+}
+
+function fjernKvittering() {
+  pendingBildeFull = null;
+  pendingBildeThumb = null;
+  pendingBildeFullUrl = null;
+  document.getElementById('kvittering-preview').style.display = 'none';
+  document.getElementById('kvittering-compress-loading').style.display = 'none';
+  document.getElementById('kvittering-main-btn').style.display = 'flex';
+  document.getElementById('kvittering-img').src = '';
+  document.getElementById('ocr-loading').style.display = 'none';
+  document.getElementById('ocr-result').style.display = 'none';
+}
+
+async function analyserKvittering() {
+  if (!pendingBildeFull) return;
+  const btn = document.getElementById('ocr-btn');
+  btn.disabled = true;
+  document.getElementById('ocr-loading').style.display = 'block';
+  document.getElementById('ocr-result').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/ocr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: pendingBildeFull, mediaType: 'image/jpeg' }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    if (json.dato) document.getElementById('f-dato').value = json.dato;
+    if (json.stasjon) document.getElementById('f-stasjon').value = json.stasjon;
+    if (json.prisPerLiter) document.getElementById('f-pris').value = json.prisPerLiter;
+    if (json.liter) document.getElementById('f-liter').value = json.liter;
+
+    document.getElementById('ocr-result').style.display = 'block';
+    updateCalcPreview();
+  } catch(e) {
+    showToast('Klarte ikke lese kvittering');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('ocr-loading').style.display = 'none';
+  }
+}
+
+// ─── FULLSCREEN BILDE + ZOOM ────────────────────────────
+let _zoomScale = 1, _zoomStartDist = 0, _zoomStartScale = 1, _lastTap = 0;
+
+function _applyZoom(scale) {
+  _zoomScale = Math.min(4, Math.max(1, scale));
+  const img = document.getElementById('fullscreen-img');
+  img.style.transform = _zoomScale === 1 ? '' : `scale(${_zoomScale})`;
+  img.style.cursor = _zoomScale > 1 ? 'zoom-out' : 'zoom-in';
+  const hint = document.getElementById('zoom-hint');
+  if (hint) hint.style.opacity = _zoomScale > 1 ? '0' : '1';
+}
+
+function showFullscreenById(id) {
+  const b = loadBilder();
+  const src = b[id + '_full'] || b[id];
+  if (!src) return;
+  _zoomScale = 1;
+  const img = document.getElementById('fullscreen-img');
+  img.src = src;
+  img.style.transform = '';
+  img.style.cursor = 'zoom-in';
+  const hint = document.getElementById('zoom-hint');
+  if (hint) hint.style.opacity = '1';
+  document.getElementById('img-fullscreen').classList.add('open');
+}
+
+function closeFullscreen() {
+  document.getElementById('img-fullscreen').classList.remove('open');
+  document.getElementById('fullscreen-img').src = '';
+  _zoomScale = 1;
+}
+
+(function initZoom() {
+  const overlay = document.getElementById('img-fullscreen');
+  if (!overlay) return;
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeFullscreen();
+  });
+
+  overlay.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      _zoomStartDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      _zoomStartScale = _zoomScale;
+    } else if (e.touches.length === 1) {
+      const now = Date.now();
+      if (now - _lastTap < 280) {
+        e.preventDefault();
+        _applyZoom(_zoomScale > 1 ? 1 : 2.5);
+      }
+      _lastTap = now;
+    }
+  }, { passive: false });
+
+  overlay.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      _applyZoom(_zoomStartScale * (dist / _zoomStartDist));
+    }
+  }, { passive: false });
+
+  overlay.addEventListener('touchend', (e) => {
+    if (e.touches.length === 0 && _zoomScale < 1.1) _applyZoom(1);
+  });
+})();
 
 // ─── INIT ───────────────────────────────────────────────
 window.onload = async () => {
@@ -299,6 +643,10 @@ window.onload = async () => {
   loadData();
   renderAll();
   setupFormListeners();
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeFullscreen();
+  });
 };
 
 function toDateString(d) {
@@ -318,7 +666,7 @@ function uuid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-// ─── STORAGE: localStorage-first, JSONBin i bakgrunnen ──
+// ─── STORAGE ────────────────────────────────────────────
 const LS_KEY = 'bensin_data';
 
 function loadData() {
@@ -328,28 +676,13 @@ function loadData() {
   }
   if (!data.perioder) data.perioder = [];
   if (!data.fyllinger) data.fyllinger = [];
+  if (!data.betalinger) data.betalinger = [];
   syncFromCloud();
 }
 
 function saveData() {
   localStorage.setItem(LS_KEY, JSON.stringify(data));
   syncToCloud();
-}
-
-function injectHistoricalFyllinger() {
-  const hist = [
-    { id: 'hist-20260501', dato: '2026-05-01', prisPerLiter: 20.53, liter: 9.5,  kostnad: 195 },
-    { id: 'hist-20260502', dato: '2026-05-02', prisPerLiter: 17.50, liter: 4,    kostnad: 70  },
-    { id: 'hist-20260510', dato: '2026-05-10', prisPerLiter: 20.32, liter: 11.81, kostnad: 240 }
-  ];
-  let added = false;
-  for (const f of hist) {
-    if (!data.fyllinger.find(x => x.dato === f.dato)) {
-      data.fyllinger.push(f);
-      added = true;
-    }
-  }
-  if (added) { saveData(); renderAll(); }
 }
 
 async function syncFromCloud() {
@@ -362,18 +695,16 @@ async function syncFromCloud() {
       const cloud = json.record;
       if (!cloud.perioder) cloud.perioder = [];
       if (!cloud.fyllinger) cloud.fyllinger = [];
+      if (!cloud.betalinger) cloud.betalinger = [];
       let changed = false;
       for (const cf of cloud.fyllinger) {
-        if (!data.fyllinger.find(lf => lf.id === cf.id)) {
-          data.fyllinger.push(cf);
-          changed = true;
-        }
+        if (!data.fyllinger.find(lf => lf.id === cf.id)) { data.fyllinger.push(cf); changed = true; }
       }
       for (const cp of cloud.perioder) {
-        if (!data.perioder.find(lp => lp.id === cp.id)) {
-          data.perioder.push(cp);
-          changed = true;
-        }
+        if (!data.perioder.find(lp => lp.id === cp.id)) { data.perioder.push(cp); changed = true; }
+      }
+      for (const cb of cloud.betalinger) {
+        if (!data.betalinger.find(lb => lb.id === cb.id)) { data.betalinger.push(cb); changed = true; }
       }
       if (changed) {
         localStorage.setItem(LS_KEY, JSON.stringify(data));
@@ -381,7 +712,6 @@ async function syncFromCloud() {
       }
     }
   } catch (e) {}
-  injectHistoricalFyllinger();
 }
 
 async function syncToCloud() {
@@ -404,31 +734,41 @@ async function syncData() {
 // ─── RENDER ─────────────────────────────────────────────
 function renderAll() {
   renderOversikt();
+  renderTotalOversikt();
   renderHistorikk();
   renderKalender();
+  renderKonto();
 }
 
 function renderOversikt() {
   const aktiv = getAktivPeriode();
-  const fillingerIPeriode = aktiv
-    ? data.fyllinger.filter(f => f.dato >= aktiv.startDato)
-    : [];
-
+  const fillingerIPeriode = aktiv ? data.fyllinger.filter(f => f.dato >= aktiv.startDato) : [];
   const totalBrukt = fillingerIPeriode.reduce((s, f) => s + f.kostnad, 0);
-  const mottatt = aktiv ? aktiv.mottatt : 0;
-  const diff = mottatt - totalBrukt;
+  const periodeMottatt = aktiv ? aktiv.mottatt : 0;
+  const skyldBetalinger = aktiv ? (data.betalinger || []).filter(b => b.dato >= aktiv.startDato) : [];
+  const skyldBetalt = skyldBetalinger.reduce((s, b) => s + b.belop, 0);
+  const totalMottatt = periodeMottatt + skyldBetalt;
+  const diff = totalMottatt - totalBrukt;
 
   if (aktiv) {
-    document.getElementById('periode-dates').innerHTML =
-      `Fra: <span>${formatDate(aktiv.startDato)}</span>`;
-    document.getElementById('ov-mottatt').textContent = formatKr(mottatt);
+    document.getElementById('periode-dates').innerHTML = `Fra: <span>${formatDate(aktiv.startDato)}</span>`;
+    document.getElementById('ov-mottatt').textContent = formatKr(periodeMottatt);
+    const betalingRow = document.getElementById('ov-betaling-row');
+    if (skyldBetalt > 0) {
+      document.getElementById('ov-betaling').textContent = formatKr(skyldBetalt);
+      betalingRow.style.display = 'flex';
+    } else {
+      betalingRow.style.display = 'none';
+    }
     document.getElementById('ov-brukt').textContent = formatKr(totalBrukt);
     const diffEl = document.getElementById('ov-diff');
     diffEl.textContent = (diff >= 0 ? '+' : '') + formatKr(diff);
     diffEl.className = diff >= 0 ? 'positive' : 'negative';
   }
 
-  // Stats (alle fyllinger totalt)
+  const slettBtn = document.getElementById('slett-periode-btn');
+  if (slettBtn) slettBtn.style.display = aktiv ? 'block' : 'none';
+
   const alle = data.fyllinger;
   const totLiter = alle.reduce((s, f) => s + f.liter, 0);
   const totKr = alle.reduce((s, f) => s + f.kostnad, 0);
@@ -438,7 +778,6 @@ function renderOversikt() {
   document.getElementById('stat-liter').textContent = totLiter.toFixed(1) + ' L';
   document.getElementById('stat-snitt').textContent = snitt > 0 ? snitt.toFixed(2).replace('.', ',') : '—';
 
-  // Siste fylling
   const sistEl = document.getElementById('siste-fylling');
   if (alle.length === 0) {
     sistEl.className = 'empty-state';
@@ -451,7 +790,7 @@ function renderOversikt() {
         <div class="filling-left">
           <div class="filling-icon">⛽</div>
           <div>
-            <div class="filling-date">${formatDate(s.dato)}</div>
+            <div class="filling-date">${formatDate(s.dato)}${s.stasjon ? ` <span style="color:var(--muted);font-weight:400;font-size:13px">· ${escapeHtml(s.stasjon)}</span>` : ''}</div>
             <div class="filling-detail">${s.liter.toFixed(1)} L × ${s.prisPerLiter.toFixed(2).replace('.', ',')} kr/L</div>
           </div>
         </div>
@@ -469,23 +808,31 @@ function renderHistorikk() {
     return;
   }
   const sorted = [...data.fyllinger].sort((a, b) => b.dato.localeCompare(a.dato));
-  el.innerHTML = sorted.map(f => `
-    <div class="filling-item">
-      <div class="filling-left">
-        <div class="filling-icon">⛽</div>
-        <div>
-          <div class="filling-date">${formatDate(f.dato)}</div>
-          <div class="filling-detail">${f.liter.toFixed(1)} L × ${f.prisPerLiter.toFixed(2).replace('.', ',')} kr/L</div>
+  const bilder = loadBilder();
+  el.innerHTML = sorted.map(f => {
+    const hasBilde = !!bilder[f.id];
+    return `
+    <div class="filling-item" style="${hasBilde ? 'flex-direction:column;align-items:stretch' : ''}">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="filling-left">
+          <div class="filling-icon">⛽</div>
+          <div>
+            <div class="filling-date">${formatDate(f.dato)}</div>
+            ${f.stasjon ? `<div class="filling-detail" style="margin-top:1px">${escapeHtml(f.stasjon)}</div>` : ''}
+            <div class="filling-detail" style="margin-top:${f.stasjon ? '1px' : '2px'}">${f.liter.toFixed(1)} L × ${f.prisPerLiter.toFixed(2).replace('.', ',')} kr/L</div>
+          </div>
+        </div>
+        <div class="filling-right" style="display:flex;align-items:center">
+          <div>
+            <div class="filling-cost">${formatKr(f.kostnad)}</div>
+            <div class="filling-liters">${f.liter.toFixed(1)} liter</div>
+          </div>
+          <button class="delete-btn" onclick="slettFylling('${f.id}')">✕</button>
         </div>
       </div>
-      <div class="filling-right" style="display:flex;align-items:center">
-        <div>
-          <div class="filling-cost">${formatKr(f.kostnad)}</div>
-          <div class="filling-liters">${f.liter.toFixed(1)} liter</div>
-        </div>
-        <button class="delete-btn" onclick="slettFylling('${f.id}')">✕</button>
-      </div>
-    </div>`).join('');
+      ${hasBilde ? `<div class="receipt-thumb-wrap"><img class="receipt-thumb" src="${bilder[f.id]}" onclick="showFullscreenById('${f.id}')" title="Se kvittering"></div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 function renderKalender() {
@@ -495,16 +842,14 @@ function renderKalender() {
   document.getElementById('cal-month-label').textContent = `${monthNames[calMonth]} ${calYear}`;
 
   const grid = document.getElementById('cal-grid');
-  grid.innerHTML = dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  const parts = dayNames.map(d => `<div class="cal-day-name">${d}</div>`);
 
   const firstDay = new Date(calYear, calMonth, 1);
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  let startDow = firstDay.getDay(); // 0=Sun
-  startDow = startDow === 0 ? 6 : startDow - 1; // Mon=0
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
 
-  for (let i = 0; i < startDow; i++) {
-    grid.innerHTML += `<div class="cal-day empty"></div>`;
-  }
+  for (let i = 0; i < startDow; i++) parts.push('<div class="cal-day"></div>');
 
   const today = toDateString(new Date());
   const fillingsByDate = {};
@@ -512,32 +857,48 @@ function renderKalender() {
     if (!fillingsByDate[f.dato]) fillingsByDate[f.dato] = [];
     fillingsByDate[f.dato].push(f);
   });
+  const periodDates = {};
+  data.perioder.forEach(p => { periodDates[p.startDato] = p; });
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = dateStr === today;
     const fillings = fillingsByDate[dateStr] || [];
     const hasFilling = fillings.length > 0;
     const totalKr = fillings.reduce((s, f) => s + f.kostnad, 0);
+    const periode = periodDates[dateStr];
+    const hasPeriod = !!periode;
 
     let cls = 'cal-day';
-    if (isToday) cls += ' today';
+    if (dateStr === today) cls += ' today';
     if (hasFilling) cls += ' has-filling';
+    if (hasPeriod) cls += ' has-period';
 
-    grid.innerHTML += `
-      <div class="${cls}" onclick="calDayClick('${dateStr}', ${hasFilling})">
+    parts.push(`
+      <div class="${cls}" onclick="calDayClick('${dateStr}')">
         <div>${d}</div>
-        ${hasFilling ? `<div class="cal-fuel" title="${formatKr(totalKr)}">⛽</div>` : ''}
-      </div>`;
+        ${hasFilling ? `<div class="cal-amount">⛽ ${Math.round(totalKr)} kr</div>` : ''}
+        ${hasPeriod ? `<div class="cal-period-dot">💰 ${Math.round(periode.mottatt)} kr</div>` : ''}
+      </div>`);
   }
+
+  grid.innerHTML = parts.join('');
 }
 
-function calDayClick(date, hasFilling) {
+function calDayClick(date) {
   const detail = document.getElementById('cal-detail');
-  if (!hasFilling) { detail.classList.remove('visible'); return; }
   const fillings = data.fyllinger.filter(f => f.dato === date);
-  detail.innerHTML = `<strong>${formatDate(date)}</strong><br>` +
-    fillings.map(f => `⛽ ${f.liter.toFixed(1)} L × ${f.prisPerLiter.toFixed(2).replace('.', ',')} kr/L = <strong>${formatKr(f.kostnad)}</strong>`).join('<br>');
+  const periode = data.perioder.find(p => p.startDato === date);
+  if (fillings.length === 0 && !periode) { detail.classList.remove('visible'); return; }
+
+  let html = `<strong>${formatDate(date)}</strong><br>`;
+  if (fillings.length > 0) {
+    html += fillings.map(f => `⛽ ${f.liter.toFixed(1)} L × ${f.prisPerLiter.toFixed(2).replace('.', ',')} kr/L = <strong>${formatKr(f.kostnad)}</strong>`).join('<br>');
+  }
+  if (periode) {
+    if (fillings.length > 0) html += '<br>';
+    html += `<span style="color:var(--green)">💰 Mottatt bensinpenger: <strong>${formatKr(periode.mottatt)}</strong></span>`;
+  }
+  detail.innerHTML = html;
   detail.classList.add('visible');
 }
 
@@ -549,9 +910,10 @@ function kalenderNav(dir) {
   renderKalender();
 }
 
-// ─── FORM ────────────────────────────────────────────────
+// ─── FORM ───────────────────────────────────────────────
 function setupFormListeners() {
-  setInterval(updateCalcPreview, 300);
+  document.getElementById('f-pris').addEventListener('input', updateCalcPreview);
+  document.getElementById('f-liter').addEventListener('input', updateCalcPreview);
 }
 
 function updateCalcPreview() {
@@ -573,19 +935,30 @@ async function lagreFylling() {
   const dato = document.getElementById('f-dato').value;
   const pris = parseFloat(document.getElementById('f-pris').value);
   const liter = parseFloat(document.getElementById('f-liter').value);
+  const stasjon = document.getElementById('f-stasjon').value.trim();
 
   if (!dato || !pris || !liter) { showToast('Fyll inn alle felt'); return; }
 
-  const fylling = { id: uuid(), dato, prisPerLiter: pris, liter, kostnad: parseFloat((pris * liter).toFixed(2)) };
+  const id = uuid();
+  const fylling = { id, dato, prisPerLiter: pris, liter, kostnad: parseFloat((pris * liter).toFixed(2)) };
+  if (stasjon) fylling.stasjon = stasjon;
+
+  if (pendingBildeThumb) saveBildeLocal(id, pendingBildeThumb, pendingBildeFullUrl);
+  pendingBildeThumb = null;
+  pendingBildeFull = null;
+  pendingBildeFullUrl = null;
+
   data.fyllinger.push(fylling);
   saveData();
   renderAll();
   showToast('✓ Fylling lagret');
 
+  document.getElementById('f-stasjon').value = '';
   document.getElementById('f-pris').value = '';
   document.getElementById('f-liter').value = '';
   document.getElementById('calc-preview').innerHTML = '<div>— kr</div>';
   document.getElementById('lagre-btn').disabled = true;
+  fjernKvittering();
   switchTab('oversikt');
 }
 
@@ -595,6 +968,7 @@ function slettFylling(id) {
   document.getElementById('slett-info').textContent = `${formatDate(f.dato)} — ${f.liter.toFixed(1)} L — ${formatKr(f.kostnad)}`;
   document.getElementById('slett-bekreft').onclick = () => {
     data.fyllinger = data.fyllinger.filter(f => f.id !== id);
+    deleteBildeLocal(id);
     saveData();
     renderAll();
     closeSlettModal();
@@ -609,7 +983,66 @@ function closeSlettModal(e) {
   }
 }
 
-// ─── PERIODE ─────────────────────────────────────────────
+function getTotals() {
+  const totFyllt = data.fyllinger.reduce((s, f) => s + f.kostnad, 0);
+  const totPeriode = data.perioder.reduce((s, p) => s + p.mottatt, 0);
+  const totBetalt = totPeriode + (data.betalinger || []).reduce((s, b) => s + b.belop, 0);
+  const skyldig = Math.max(0, totFyllt - totBetalt);
+  return { totFyllt, totBetalt, skyldig, eget: skyldig };
+}
+
+function renderTotalOversikt() {
+  const { totFyllt, totBetalt, skyldig, eget } = getTotals();
+  document.getElementById('to-fyllt').textContent = formatKr(totFyllt);
+  document.getElementById('to-betalt').textContent = formatKr(totBetalt);
+  const egetEl = document.getElementById('to-eget');
+  egetEl.textContent = formatKr(eget);
+  egetEl.className = 'to-col-val ' + (eget > 0 ? 'c-red' : 'c-green');
+  const skyldEl = document.getElementById('to-skyldig');
+  if (skyldig > 0) {
+    skyldEl.textContent = formatKr(skyldig);
+    skyldEl.className = 'val negative';
+  } else {
+    skyldEl.textContent = 'Gjort opp ✓';
+    skyldEl.className = 'val positive';
+  }
+}
+
+function renderKonto() {
+  renderTotalOversikt();
+  const el = document.getElementById('konto-perioder-liste');
+  const allePerioder = [...data.perioder].sort((a, b) => b.startDato.localeCompare(a.startDato));
+  const alleBetalinger = [...(data.betalinger || [])].sort((a, b) => b.dato.localeCompare(a.dato));
+
+  if (allePerioder.length === 0 && alleBetalinger.length === 0) {
+    el.innerHTML = '<div class="empty-state">Ingen perioder eller betalinger</div>';
+    return;
+  }
+
+  const alleRader = [
+    ...allePerioder.map(p => ({ ...p, type: 'periode', dato: p.startDato, belop: p.mottatt })),
+    ...alleBetalinger.map(b => ({ ...b, type: 'betaling' }))
+  ].sort((a, b) => b.dato.localeCompare(a.dato));
+
+  el.innerHTML = alleRader.map(r => `
+    <div class="filling-item">
+      <div class="filling-left">
+        <div class="filling-icon">${r.type === 'periode' ? '📅' : '💸'}</div>
+        <div>
+          <div class="filling-date">${formatDate(r.dato)}</div>
+          <div class="filling-detail">${r.type === 'periode' ? 'Ny periode' : 'Skyldig betaling'}</div>
+        </div>
+      </div>
+      <div class="filling-right" style="display:flex;align-items:center">
+        <div>
+          <div class="filling-cost" style="color:var(--green)">${formatKr(r.belop)}</div>
+        </div>
+        <button class="delete-btn" onclick="${r.type === 'periode' ? `slettPeriodeById('${r.id}')` : `slettBetaling('${r.id}')`}">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// ─── PERIODE ────────────────────────────────────────────
 function getAktivPeriode() {
   if (data.perioder.length === 0) return null;
   return data.perioder[data.perioder.length - 1];
@@ -630,11 +1063,75 @@ function closePeriodeModal(e) {
   }
 }
 
+function slettPeriodeById(id) {
+  const p = data.perioder.find(p => p.id === id);
+  if (!p) return;
+  document.getElementById('slett-periode-info').textContent = `Fra: ${formatDate(p.startDato)} — ${formatKr(p.mottatt)}`;
+  document.getElementById('slett-periode-bekreft').onclick = () => {
+    data.perioder = data.perioder.filter(x => x.id !== id);
+    saveData();
+    renderAll();
+    closeSlettPeriodeModal();
+    showToast('Periode slettet');
+  };
+  document.getElementById('slett-periode-modal').classList.add('open');
+}
+
+function slettBetaling(id) {
+  data.betalinger = data.betalinger.filter(x => x.id !== id);
+  saveData();
+  renderAll();
+  showToast('Betaling slettet');
+}
+
+function openBetalingModal() {
+  document.getElementById('b-dato').value = toDateString(new Date());
+  document.getElementById('b-belop').value = '';
+  document.getElementById('betaling-modal').classList.add('open');
+}
+
+function closeBetalingModal(e) {
+  if (!e || e.target.classList.contains('modal-overlay')) {
+    document.getElementById('betaling-modal').classList.remove('open');
+  }
+}
+
+async function lagreBetaling() {
+  const dato = document.getElementById('b-dato').value;
+  const belop = parseFloat(document.getElementById('b-belop').value);
+  if (!dato || !belop) { showToast('Fyll inn begge felt'); return; }
+  if (!data.betalinger) data.betalinger = [];
+  data.betalinger.push({ id: uuid(), dato, belop });
+  saveData();
+  renderAll();
+  closeBetalingModal();
+  showToast('✓ Betaling lagret');
+}
+
+function slettAktivPeriode() {
+  const aktiv = getAktivPeriode();
+  if (!aktiv) return;
+  document.getElementById('slett-periode-info').textContent = `Fra: ${formatDate(aktiv.startDato)} — ${formatKr(aktiv.mottatt)}`;
+  document.getElementById('slett-periode-bekreft').onclick = () => {
+    data.perioder = data.perioder.filter(p => p.id !== aktiv.id);
+    saveData();
+    renderAll();
+    closeSlettPeriodeModal();
+    showToast('Periode slettet');
+  };
+  document.getElementById('slett-periode-modal').classList.add('open');
+}
+
+function closeSlettPeriodeModal(e) {
+  if (!e || e.target.classList.contains('modal-overlay')) {
+    document.getElementById('slett-periode-modal').classList.remove('open');
+  }
+}
+
 async function lagrePeriode() {
   const dato = document.getElementById('p-dato').value;
   const mottatt = parseFloat(document.getElementById('p-mottatt').value);
   if (!dato || !mottatt) { showToast('Fyll inn begge felt'); return; }
-
   data.perioder.push({ id: uuid(), startDato: dato, mottatt });
   saveData();
   renderAll();
@@ -642,20 +1139,14 @@ async function lagrePeriode() {
   showToast('✓ Ny periode startet');
 }
 
-// ─── TABS & UTILS ────────────────────────────────────────
-function switchTab(name, tabEl, navEl) {
+// ─── TABS & UTILS ───────────────────────────────────────
+const TAB_ORDER = ['oversikt','fyll','historikk','kalender','konto'];
+
+function switchTab(name, navEl) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-
-  if (tabEl) tabEl.classList.add('active');
   if (navEl) navEl.classList.add('active');
-
-  // sync top tabs with bottom nav
-  const tabIndex = ['oversikt','fyll','historikk','kalender'].indexOf(name);
-  document.querySelectorAll('.tab')[tabIndex]?.classList.add('active');
-  document.querySelectorAll('.nav-btn')[tabIndex]?.classList.add('active');
 }
 
 function showToast(msg) {
@@ -666,7 +1157,16 @@ function showToast(msg) {
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+          window.location.reload();
+        }
+      });
+    });
+  });
 }
 </script>
 </body>

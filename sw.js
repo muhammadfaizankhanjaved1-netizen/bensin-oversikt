@@ -1,4 +1,4 @@
-const CACHE = 'bensin-v1';
+const CACHE = 'bensin-v3';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -13,15 +13,24 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Network-first: alltid prøv nett, fall tilbake på cache hvis offline
 self.addEventListener('fetch', e => {
+  const req = e.request;
+  const url = new URL(req.url);
+
+  // HTML hentes alltid fra nett — aldri fra cache
+  if (req.destination === 'document' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+    e.respondWith(fetch(req).catch(() => caches.match(req)));
+    return;
+  }
+
+  // Alt annet: network-first
   e.respondWith(
-    fetch(e.request)
+    fetch(req)
       .then(res => {
         const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
+        caches.open(CACHE).then(c => c.put(req, copy));
         return res;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(req))
   );
 });
