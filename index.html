@@ -559,6 +559,22 @@ async function analyserKvittering() {
   }
 }
 
+// ─── OPPDATER KVITTERINGSBILDE (eksisterende fylling) ───
+async function oppdaterKvittering(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  showToast('⟳ Oppdaterer bilde...');
+  try {
+    const fullUrl = await compressImage(file, 900, 0.88);
+    const thumbUrl = await compressImage(file, 180, 0.80);
+    saveBildeLocal(id, thumbUrl, fullUrl);
+    renderHistorikk();
+    showToast('✓ Bilde oppdatert');
+  } catch(e) {
+    showToast('Klarte ikke laste bildet');
+  }
+}
+
 // ─── FULLSCREEN BILDE + ZOOM ────────────────────────────
 let _zoomScale = 1, _zoomStartDist = 0, _zoomStartScale = 1, _lastTap = 0;
 
@@ -830,7 +846,7 @@ function renderHistorikk() {
           <button class="delete-btn" onclick="slettFylling('${f.id}')">✕</button>
         </div>
       </div>
-      ${hasBilde ? `<div class="receipt-thumb-wrap"><img class="receipt-thumb" src="${bilder[f.id]}" onclick="showFullscreenById('${f.id}')" title="Se kvittering"></div>` : ''}
+      ${hasBilde ? `<div class="receipt-thumb-wrap" style="display:flex;align-items:center;gap:10px"><img class="receipt-thumb" src="${bilder[f.id]}" onclick="showFullscreenById('${f.id}')" title="Se kvittering"><label style="font-size:12px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px"><input type="file" accept="image/*" style="display:none" onchange="oppdaterKvittering('${f.id}', this)">📷 Oppdater</label></div>` : ''}
     </div>`;
   }).join('');
 }
