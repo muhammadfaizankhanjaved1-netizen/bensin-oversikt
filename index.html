@@ -990,11 +990,12 @@ function getTotals() {
   const totPeriode = data.perioder.reduce((s, p) => s + p.mottatt, 0);
   const totBetalt = totPeriode + (data.betalinger || []).reduce((s, b) => s + b.belop, 0);
   const skyldig = Math.max(0, totFyllt - totBetalt);
-  return { totFyllt, totBetalt, skyldig, eget: skyldig };
+  const surplus = Math.max(0, totBetalt - totFyllt);
+  return { totFyllt, totBetalt, skyldig, eget: skyldig, surplus };
 }
 
 function renderTotalOversikt() {
-  const { totFyllt, totBetalt, skyldig, eget } = getTotals();
+  const { totFyllt, totBetalt, skyldig, eget, surplus } = getTotals();
   document.getElementById('to-fyllt').textContent = formatKr(totFyllt);
   document.getElementById('to-betalt').textContent = formatKr(totBetalt);
   const egetEl = document.getElementById('to-eget');
@@ -1004,6 +1005,9 @@ function renderTotalOversikt() {
   if (skyldig > 0) {
     skyldEl.textContent = formatKr(skyldig);
     skyldEl.className = 'val negative';
+  } else if (surplus > 0) {
+    skyldEl.textContent = `Gjort opp ✓  (+${formatKr(surplus)} til gode)`;
+    skyldEl.className = 'val positive';
   } else {
     skyldEl.textContent = 'Gjort opp ✓';
     skyldEl.className = 'val positive';
