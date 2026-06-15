@@ -696,20 +696,9 @@ async function syncFromCloud() {
       if (!cloud.perioder) cloud.perioder = [];
       if (!cloud.fyllinger) cloud.fyllinger = [];
       if (!cloud.betalinger) cloud.betalinger = [];
-      let changed = false;
-      for (const cf of cloud.fyllinger) {
-        if (!data.fyllinger.find(lf => lf.id === cf.id)) { data.fyllinger.push(cf); changed = true; }
-      }
-      for (const cp of cloud.perioder) {
-        if (!data.perioder.find(lp => lp.id === cp.id)) { data.perioder.push(cp); changed = true; }
-      }
-      for (const cb of cloud.betalinger) {
-        if (!data.betalinger.find(lb => lb.id === cb.id)) { data.betalinger.push(cb); changed = true; }
-      }
-      if (changed) {
-        localStorage.setItem(LS_KEY, JSON.stringify(data));
-        renderAll();
-      }
+      data = cloud;
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+      renderAll();
     }
   } catch (e) {}
 }
@@ -791,7 +780,7 @@ function renderOversikt() {
           <div class="filling-icon">⛽</div>
           <div>
             <div class="filling-date">${formatDate(s.dato)}${s.stasjon ? ` <span style="color:var(--muted);font-weight:400;font-size:13px">· ${escapeHtml(s.stasjon)}</span>` : ''}</div>
-            <div class="filling-detail">${s.liter.toFixed(1)} L × ${s.prisPerLiter.toFixed(2).replace('.', ',')} kr/L</div>
+            <div class="filling-detail">${s.liter.toFixed(1)} L × ${(s.prisPerLiter ?? s.pris ?? 0).toFixed(2).replace('.', ',')} kr/L</div>
           </div>
         </div>
         <div class="filling-right">
@@ -819,7 +808,7 @@ function renderHistorikk() {
           <div>
             <div class="filling-date">${formatDate(f.dato)}</div>
             ${f.stasjon ? `<div class="filling-detail" style="margin-top:1px">${escapeHtml(f.stasjon)}</div>` : ''}
-            <div class="filling-detail" style="margin-top:${f.stasjon ? '1px' : '2px'}">${f.liter.toFixed(1)} L × ${f.prisPerLiter.toFixed(2).replace('.', ',')} kr/L</div>
+            <div class="filling-detail" style="margin-top:${f.stasjon ? '1px' : '2px'}">${f.liter.toFixed(1)} L × ${(f.prisPerLiter ?? f.pris ?? 0).toFixed(2).replace('.', ',')} kr/L</div>
           </div>
         </div>
         <div class="filling-right" style="display:flex;align-items:center">
@@ -901,7 +890,7 @@ function calDayClick(date) {
 
   let html = `<strong>${formatDate(date)}</strong><br>`;
   if (fillings.length > 0) {
-    html += fillings.map(f => `⛽ ${f.liter.toFixed(1)} L × ${f.prisPerLiter.toFixed(2).replace('.', ',')} kr/L = <strong>${formatKr(f.kostnad)}</strong>`).join('<br>');
+    html += fillings.map(f => `⛽ ${f.liter.toFixed(1)} L × ${(f.prisPerLiter ?? f.pris ?? 0).toFixed(2).replace('.', ',')} kr/L = <strong>${formatKr(f.kostnad)}</strong>`).join('<br>');
   }
   if (periode) {
     if (fillings.length > 0) html += '<br>';
@@ -1040,10 +1029,10 @@ function renderKonto() {
   el.innerHTML = alleRader.map(r => `
     <div class="filling-item">
       <div class="filling-left">
-        <div class="filling-icon">${r.type === 'periode' ? '📅' : '💸'}</div>
+        <div class="filling-icon">${r.type === 'periode' ? '📅' : '💰'}</div>
         <div>
           <div class="filling-date">${formatDate(r.dato)}</div>
-          <div class="filling-detail">${r.type === 'periode' ? 'Ny periode' : 'Skyldig betaling'}</div>
+          <div class="filling-detail">${r.type === 'periode' ? 'Ny periode' : (r.fra ? escapeHtml(r.fra) : 'Betaling mottatt')}</div>
         </div>
       </div>
       <div class="filling-right" style="display:flex;align-items:center">
