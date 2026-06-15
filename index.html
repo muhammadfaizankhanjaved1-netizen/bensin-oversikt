@@ -859,6 +859,11 @@ function renderKalender() {
   });
   const periodDates = {};
   data.perioder.forEach(p => { periodDates[p.startDato] = p; });
+  const betalingerByDate = {};
+  (data.betalinger || []).forEach(b => {
+    if (!betalingerByDate[b.dato]) betalingerByDate[b.dato] = [];
+    betalingerByDate[b.dato].push(b);
+  });
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -866,7 +871,10 @@ function renderKalender() {
     const hasFilling = fillings.length > 0;
     const totalKr = fillings.reduce((s, f) => s + f.kostnad, 0);
     const periode = periodDates[dateStr];
-    const hasPeriod = !!periode;
+    const betalinger = betalingerByDate[dateStr] || [];
+    const totalBetalt = betalinger.reduce((s, b) => s + (b.belop || 0), 0);
+    const hasPeriod = !!periode || betalinger.length > 0;
+    const visKr = (periode ? periode.mottatt : 0) + totalBetalt;
 
     let cls = 'cal-day';
     if (dateStr === today) cls += ' today';
@@ -877,7 +885,7 @@ function renderKalender() {
       <div class="${cls}" onclick="calDayClick('${dateStr}')">
         <div>${d}</div>
         ${hasFilling ? `<div class="cal-amount">⛽ ${Math.round(totalKr)} kr</div>` : ''}
-        ${hasPeriod ? `<div class="cal-period-dot">💰 ${Math.round(periode.mottatt)} kr</div>` : ''}
+        ${hasPeriod ? `<div class="cal-period-dot">💰 ${Math.round(visKr)} kr</div>` : ''}
       </div>`);
   }
 
@@ -888,7 +896,8 @@ function calDayClick(date) {
   const detail = document.getElementById('cal-detail');
   const fillings = data.fyllinger.filter(f => f.dato === date);
   const periode = data.perioder.find(p => p.startDato === date);
-  if (fillings.length === 0 && !periode) { detail.classList.remove('visible'); return; }
+  const betalinger = (data.betalinger || []).filter(b => b.dato === date);
+  if (fillings.length === 0 && !periode && betalinger.length === 0) { detail.classList.remove('visible'); return; }
 
   let html = `<strong>${formatDate(date)}</strong><br>`;
   if (fillings.length > 0) {
@@ -898,6 +907,10 @@ function calDayClick(date) {
     if (fillings.length > 0) html += '<br>';
     html += `<span style="color:var(--green)">💰 Mottatt bensinpenger: <strong>${formatKr(periode.mottatt)}</strong></span>`;
   }
+  betalinger.forEach(b => {
+    html += '<br>';
+    html += `<span style="color:var(--green)">💰 Betaling fra ${b.fra}: <strong>${formatKr(b.belop)}</strong></span>`;
+  });
   detail.innerHTML = html;
   detail.classList.add('visible');
 }
