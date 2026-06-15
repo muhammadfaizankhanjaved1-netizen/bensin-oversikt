@@ -187,15 +187,15 @@
       </div>
     </div>
     <div class="balance-row">
-      <span class="label">Periode betaling</span>
+      <span class="label">Perioder totalt</span>
       <span class="val" id="ov-mottatt">— kr</span>
     </div>
     <div class="balance-row" id="ov-betaling-row" style="display:none">
-      <span class="label">Skyldig betaling</span>
+      <span class="label">Enkeltbetalinger</span>
       <span class="val c-green" id="ov-betaling">— kr</span>
     </div>
     <div class="balance-row">
-      <span class="label">Brukt i perioden</span>
+      <span class="label">Totalt brukt</span>
       <span class="val" id="ov-brukt">— kr</span>
     </div>
     <hr class="divider">
@@ -731,25 +731,22 @@ function renderAll() {
 
 function renderOversikt() {
   const aktiv = getAktivPeriode();
-  const fillingerIPeriode = aktiv ? data.fyllinger.filter(f => f.dato >= aktiv.startDato) : [];
-  const totalBrukt = fillingerIPeriode.reduce((s, f) => s + f.kostnad, 0);
-  const periodeMottatt = aktiv ? aktiv.mottatt : 0;
-  const skyldBetalinger = aktiv ? (data.betalinger || []).filter(b => b.dato >= aktiv.startDato) : [];
-  const skyldBetalt = skyldBetalinger.reduce((s, b) => s + b.belop, 0);
-  const totalMottatt = periodeMottatt + skyldBetalt;
-  const diff = totalMottatt - totalBrukt;
+  const { totFyllt, totBetalt, surplus, skyldig } = getTotals();
+  const totPerioder = data.perioder.reduce((s, p) => s + p.mottatt, 0);
+  const totBetalinger = (data.betalinger || []).reduce((s, b) => s + b.belop, 0);
+  const diff = totBetalt - totFyllt;
 
   if (aktiv) {
     document.getElementById('periode-dates').innerHTML = `Fra: <span>${formatDate(aktiv.startDato)}</span>`;
-    document.getElementById('ov-mottatt').textContent = formatKr(periodeMottatt);
+    document.getElementById('ov-mottatt').textContent = formatKr(totPerioder);
     const betalingRow = document.getElementById('ov-betaling-row');
-    if (skyldBetalt > 0) {
-      document.getElementById('ov-betaling').textContent = formatKr(skyldBetalt);
+    if (totBetalinger > 0) {
+      document.getElementById('ov-betaling').textContent = formatKr(totBetalinger);
       betalingRow.style.display = 'flex';
     } else {
       betalingRow.style.display = 'none';
     }
-    document.getElementById('ov-brukt').textContent = formatKr(totalBrukt);
+    document.getElementById('ov-brukt').textContent = formatKr(totFyllt);
     const diffEl = document.getElementById('ov-diff');
     diffEl.textContent = (diff >= 0 ? '+' : '') + formatKr(diff);
     diffEl.className = diff >= 0 ? 'positive' : 'negative';
