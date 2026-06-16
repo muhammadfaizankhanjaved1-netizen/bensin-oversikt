@@ -345,6 +345,7 @@
 <div class="modal-overlay" id="periode-modal" onclick="closePeriodeModal(event)">
   <div class="modal">
     <h2>Ny bensinperiode</h2>
+    <div id="periode-overskudd-info" style="display:none;background:var(--card2);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--green)"></div>
     <div class="form-group">
       <label>Startdato (da X betalte)</label>
       <input type="date" id="p-dato">
@@ -1068,6 +1069,16 @@ function openPeriodeModal() {
     : toDateString(new Date());
   document.getElementById('p-dato').value = earliest;
   document.getElementById('p-mottatt').value = '';
+
+  const { surplus } = getTotals();
+  const infoEl = document.getElementById('periode-overskudd-info');
+  if (surplus > 0) {
+    infoEl.textContent = `💰 Du har allerede ${formatKr(surplus)} i overskudd fra tidligere — dette føres automatisk over til den nye perioden, du behøver ikke legge det inn på nytt. Den nye perioden går derfor ikke i minus selv om du fyller mer enn det du legger inn her.`;
+    infoEl.style.display = 'block';
+  } else {
+    infoEl.style.display = 'none';
+  }
+
   document.getElementById('periode-modal').classList.add('open');
 }
 
