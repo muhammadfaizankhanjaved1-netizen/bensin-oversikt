@@ -112,6 +112,7 @@
   .modal h2 { font-size: 18px; margin-bottom: 16px; }
   .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
   .btn-secondary { flex: 1; background: var(--card2); color: var(--text); border: none; padding: 13px; border-radius: 10px; font-size: 15px; cursor: pointer; }
+  .btn-choice-active { background: var(--accent) !important; color: #000 !important; font-weight: 700; }
 
   /* SLETT PERIODE BTN */
   .slett-periode-btn { background: none; border: 1px solid var(--red); color: var(--red); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; }
@@ -204,6 +205,10 @@
     <div class="balance-row" id="ov-betaling-row" style="display:none">
       <span class="label">Enkeltbetalinger</span>
       <span class="val c-green" id="ov-betaling">— kr</span>
+    </div>
+    <div class="balance-row" id="ov-overfort-row" style="display:none">
+      <span class="label">Overført til budsjett-app</span>
+      <span class="val" id="ov-overfort">— kr</span>
     </div>
     <div class="balance-row">
       <span class="label">Totalt brukt</span>
@@ -307,11 +312,11 @@
 <!-- KONTO -->
 <div id="tab-konto" class="section">
   <div class="card">
-    <div class="card-title">Parallell oversikt — alle perioder</div>
+    <div class="card-title">Parallell oversikt — denne måneden</div>
     <div class="to-grid">
       <div class="to-col">
         <div class="to-col-icon">⛽</div>
-        <div class="to-col-lbl">Fyllinger totalt</div>
+        <div class="to-col-lbl">Fyllinger denne mnd</div>
         <div class="to-col-val c-accent" id="to-fyllt">—</div>
       </div>
       <div class="to-col">
@@ -327,7 +332,7 @@
     </div>
     <hr class="divider" style="margin-top:12px">
     <div class="balance-row" style="margin-top:4px">
-      <span class="label">Skyldig fra X</span>
+      <span class="label">Skyldig fra X (denne mnd)</span>
       <span class="val" id="to-skyldig">—</span>
     </div>
   </div>
@@ -345,14 +350,27 @@
 <div class="modal-overlay" id="periode-modal" onclick="closePeriodeModal(event)">
   <div class="modal">
     <h2>Ny bensinperiode</h2>
-    <div id="periode-overskudd-info" style="display:none;background:var(--card2);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--green)"></div>
+    <div id="periode-overskudd-info" style="display:none;background:var(--card2);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:13px;color:var(--green)"></div>
+    <div id="periode-overskudd-valg" style="display:none;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Hva skal skje med overskuddet?</div>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn-secondary" id="btn-valg-buffer" style="flex:1" onclick="velgOverskuddBuffer()">Behold i buffer</button>
+        <button type="button" class="btn-secondary" id="btn-valg-saldo" style="flex:1" onclick="velgOverskuddSaldo()">Flytt til inngående saldo</button>
+      </div>
+      <div id="periode-saldo-info" style="display:none;font-size:11px;color:var(--muted);margin-top:6px"></div>
+    </div>
     <div class="form-group">
       <label>Startdato (da X betalte)</label>
-      <input type="date" id="p-dato">
+      <input type="date" id="p-dato" oninput="oppdaterOverskuddValgUI()">
     </div>
     <div class="form-group">
       <label>Mottatt fra X (kr)</label>
       <input type="number" id="p-mottatt" placeholder="700" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <label>Gjeld trukket fra dette beløpet (kr, valgfritt)</label>
+      <input type="number" id="p-gjeld" placeholder="0" inputmode="decimal">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Bruk dette hvis overføringen også dekker noe annet enn bensin (f.eks. gammel gjeld) — beløpet trekkes fra periodens bensin-beløp og legges automatisk inn som egen inntekt i budsjett-appen.</div>
     </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closePeriodeModal()">Avbryt</button>
@@ -436,9 +454,12 @@
 const JSONBIN_KEY = '$2a$10$YQtpXheoXVrQaXo3Sch4G..IWw/ZuAWYFnc1XPBxa82aBCieCR6XC';
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
 const BIN_ID = '6a13ecb86877513b27cb5237';
+const BUDSJETT_BIN_ID = '6a2e612dda38895dfebd923f';
+const BUDSJETT_API = `${JSONBIN_BASE}/${BUDSJETT_BIN_ID}`;
 
-let data = { perioder: [], fyllinger: [], betalinger: [] };
+let data = { perioder: [], fyllinger: [], betalinger: [], overforinger: [] };
 let calYear, calMonth;
+let periodeOverskuddValg = 'buffer';
 let pendingBildeFull = null;
 let pendingBildeThumb = null;
 let pendingBildeFullUrl = null;
@@ -556,7 +577,10 @@ async function analyserKvittering() {
     const json = await res.json();
     if (json.error) throw new Error(json.error);
 
-    if (json.dato) document.getElementById('f-dato').value = json.dato;
+    if (json.dato) {
+      const yr = parseInt((json.dato || '').split('-')[0]);
+      if (yr >= 2024 && yr <= 2030) document.getElementById('f-dato').value = json.dato;
+    }
     if (json.stasjon) document.getElementById('f-stasjon').value = json.stasjon;
     if (json.prisPerLiter) document.getElementById('f-pris').value = json.prisPerLiter;
     if (json.liter) document.getElementById('f-liter').value = json.liter;
@@ -667,6 +691,11 @@ function toDateString(d) {
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
+function nextMonthKey(dateStr) {
+  const [y, m] = dateStr.split('-').map(Number);
+  const d = new Date(y, m, 1); // m er 1-indeksert i strengen, så dette blir faktisk neste måned
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
 function formatDate(str) {
   const [y, m, d] = str.split('-');
   return `${d}.${m}.${y}`;
@@ -708,6 +737,7 @@ async function syncFromCloud() {
       if (!cloud.perioder) cloud.perioder = [];
       if (!cloud.fyllinger) cloud.fyllinger = [];
       if (!cloud.betalinger) cloud.betalinger = [];
+      if (!cloud.overforinger) cloud.overforinger = [];
       data = cloud;
       localStorage.setItem(LS_KEY, JSON.stringify(data));
       renderAll();
@@ -723,6 +753,63 @@ async function syncToCloud() {
       body: JSON.stringify(data)
     });
   } catch (e) {}
+}
+
+// ─── CROSS-APP: skriv til budsjett-appens JSONBin ──────────
+// Henter fersk kopi rett før skriving, endrer KUN det aktuelle feltet, skriver tilbake hele
+// objektet — samme "GET først, så PUT" mønster som resten av appen bruker mot sin egen bin.
+function defaultBudsjettMonth() {
+  return {
+    income:0, stipend:0, incomingSaldo:0, otherIncome:0, otherIncomeItems:[],
+    bensinReceived:0, bensinFaktisk:0,
+    fixedPaid:[], fixedAmounts:{},
+    purchases:[]
+  };
+}
+
+async function hentBudsjettRecord() {
+  const res = await fetch(`${BUDSJETT_API}/latest`, { headers: { 'X-Master-Key': JSONBIN_KEY } });
+  const json = await res.json();
+  const record = json.record || { months:{}, sparemaal:[], gjeld:[] };
+  if (!record.months) record.months = {};
+  return record;
+}
+
+async function lagreBudsjettRecord(record) {
+  await fetch(BUDSJETT_API, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+    body: JSON.stringify(record)
+  });
+}
+
+// Flytter et overskudd til budsjett-appens incomingSaldo for en gitt måned (YYYY-MM).
+async function pushTilInngaendeSaldo(manad, belop) {
+  try {
+    const record = await hentBudsjettRecord();
+    if (!record.months[manad]) record.months[manad] = defaultBudsjettMonth();
+    record.months[manad].incomingSaldo = Math.round(((parseFloat(record.months[manad].incomingSaldo) || 0) + belop) * 100) / 100;
+    await lagreBudsjettRecord(record);
+    return true;
+  } catch (e) { return false; }
+}
+
+// Legger inn gjeld-delen av en bensinoverføring som egen inntektspost i budsjett-appen,
+// for måneden overføringen faktisk skjedde i (ikke neste måned, siden gjelden er betalt nå).
+async function pushGjeldSomInntekt(dato, belop) {
+  try {
+    const manad = dato.slice(0, 7);
+    const record = await hentBudsjettRecord();
+    if (!record.months[manad]) record.months[manad] = defaultBudsjettMonth();
+    if (!Array.isArray(record.months[manad].otherIncomeItems)) record.months[manad].otherIncomeItems = [];
+    record.months[manad].otherIncomeItems.push({
+      id: 'oi_' + Date.now(),
+      desc: `Gjeld tilbakebetalt via bensin-overføring (${formatDate(dato)})`,
+      amount: belop
+    });
+    await lagreBudsjettRecord(record);
+    return true;
+  } catch (e) { return false; }
 }
 
 async function syncData() {
@@ -744,8 +831,10 @@ function renderAll() {
 function renderOversikt() {
   const aktiv = getAktivPeriode();
   const { totFyllt, totBetalt, surplus, skyldig } = getTotals();
-  const totPerioder = data.perioder.reduce((s, p) => s + p.mottatt, 0);
-  const totBetalinger = (data.betalinger || []).reduce((s, b) => s + b.belop, 0);
+  const { perioder: mPerioder, betalinger: mBetalinger, overforinger: mOverforinger } = getMonthRecords();
+  const totPerioder = mPerioder.reduce((s, p) => s + p.mottatt, 0);
+  const totBetalinger = mBetalinger.reduce((s, b) => s + b.belop, 0);
+  const totOverfort = mOverforinger.reduce((s, o) => s + o.belop, 0);
   const diff = totBetalt - totFyllt;
 
   if (aktiv) {
@@ -757,6 +846,13 @@ function renderOversikt() {
       betalingRow.style.display = 'flex';
     } else {
       betalingRow.style.display = 'none';
+    }
+    const overfortRow = document.getElementById('ov-overfort-row');
+    if (totOverfort > 0) {
+      document.getElementById('ov-overfort').textContent = '-' + formatKr(totOverfort);
+      overfortRow.style.display = 'flex';
+    } else {
+      overfortRow.style.display = 'none';
     }
     document.getElementById('ov-brukt').textContent = formatKr(totFyllt);
     const diffEl = document.getElementById('ov-diff');
@@ -862,6 +958,11 @@ function renderKalender() {
     if (!betalingerByDate[b.dato]) betalingerByDate[b.dato] = [];
     betalingerByDate[b.dato].push(b);
   });
+  const overforingerByDate = {};
+  (data.overforinger || []).forEach(o => {
+    if (!overforingerByDate[o.dato]) overforingerByDate[o.dato] = [];
+    overforingerByDate[o.dato].push(o);
+  });
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -871,6 +972,8 @@ function renderKalender() {
     const periode = periodDates[dateStr];
     const betalinger = betalingerByDate[dateStr] || [];
     const totalBetalt = betalinger.reduce((s, b) => s + (b.belop || 0), 0);
+    const overforinger = overforingerByDate[dateStr] || [];
+    const hasOverforing = overforinger.length > 0;
     const hasPeriod = !!periode || betalinger.length > 0;
     const visKr = (periode ? periode.mottatt : 0) + totalBetalt;
 
@@ -884,6 +987,7 @@ function renderKalender() {
         <div>${d}</div>
         ${hasFilling ? `<div class="cal-amount">⛽ ${Math.round(totalKr)} kr</div>` : ''}
         ${hasPeriod ? `<div class="cal-period-dot">💰 ${Math.round(visKr)} kr</div>` : ''}
+        ${hasOverforing ? `<div class="cal-period-dot">🏦 -${Math.round(overforinger.reduce((s,o)=>s+o.belop,0))} kr</div>` : ''}
       </div>`);
   }
 
@@ -895,7 +999,8 @@ function calDayClick(date) {
   const fillings = data.fyllinger.filter(f => f.dato === date);
   const periode = data.perioder.find(p => p.startDato === date);
   const betalinger = (data.betalinger || []).filter(b => b.dato === date);
-  if (fillings.length === 0 && !periode && betalinger.length === 0) { detail.classList.remove('visible'); return; }
+  const overforinger = (data.overforinger || []).filter(o => o.dato === date);
+  if (fillings.length === 0 && !periode && betalinger.length === 0 && overforinger.length === 0) { detail.classList.remove('visible'); return; }
 
   let html = `<strong>${formatDate(date)}</strong><br>`;
   if (fillings.length > 0) {
@@ -904,10 +1009,17 @@ function calDayClick(date) {
   if (periode) {
     if (fillings.length > 0) html += '<br>';
     html += `<span style="color:var(--green)">💰 Mottatt bensinpenger: <strong>${formatKr(periode.mottatt)}</strong></span>`;
+    if (periode.gjeldTrukket) {
+      html += `<br><span style="color:var(--muted);font-size:12px">(${formatKr(periode.gjeldTrukket)} gjeld trukket fra ${formatKr(periode.bruttoMottatt)} brutto)</span>`;
+    }
   }
   betalinger.forEach(b => {
     html += '<br>';
     html += `<span style="color:var(--green)">💰 Betaling fra ${b.fra}: <strong>${formatKr(b.belop)}</strong></span>`;
+  });
+  overforinger.forEach(o => {
+    html += '<br>';
+    html += `<span style="color:var(--muted)">🏦 Flyttet til ${o.tilManad} inngående saldo: <strong>${formatKr(o.belop)}</strong></span>`;
   });
   detail.innerHTML = html;
   detail.classList.add('visible');
@@ -994,10 +1106,29 @@ function closeSlettModal(e) {
   }
 }
 
+function currentMonthKey() {
+  return toDateString(new Date()).slice(0, 7);
+}
+
+// Kun inneværende kalendermåned — eldre måneders overskudd/skyldig er for usikkert til å spore
+// videre (Faizan bestemte 16.06.2026 å regne ferskt fra og med nå, se memory feedback_budsjett_bugs).
+function getMonthRecords() {
+  const mk = currentMonthKey();
+  return {
+    fyllinger: data.fyllinger.filter(f => f.dato && f.dato.startsWith(mk)),
+    perioder: data.perioder.filter(p => p.startDato && p.startDato.startsWith(mk)),
+    betalinger: (data.betalinger || []).filter(b => b.dato && b.dato.startsWith(mk)),
+    overforinger: (data.overforinger || []).filter(o => o.dato && o.dato.startsWith(mk)),
+  };
+}
+
 function getTotals() {
-  const totFyllt = data.fyllinger.reduce((s, f) => s + f.kostnad, 0);
-  const totPeriode = data.perioder.reduce((s, p) => s + p.mottatt, 0);
-  const totBetalt = totPeriode + (data.betalinger || []).reduce((s, b) => s + b.belop, 0);
+  const { fyllinger, perioder, betalinger, overforinger } = getMonthRecords();
+  const totFyllt = fyllinger.reduce((s, f) => s + f.kostnad, 0);
+  const totPeriode = perioder.reduce((s, p) => s + p.mottatt, 0);
+  const totOverfort = overforinger.reduce((s, o) => s + o.belop, 0);
+  // Overført til inngående saldo i budsjett-appen teller ikke som bensin-buffer her lenger.
+  const totBetalt = Math.max(0, totPeriode + betalinger.reduce((s, b) => s + b.belop, 0) - totOverfort);
   const skyldig = Math.max(0, totFyllt - totBetalt);
   const surplus = Math.max(0, totBetalt - totFyllt);
   return { totFyllt, totBetalt, skyldig, eget: skyldig, surplus };
@@ -1028,33 +1159,59 @@ function renderKonto() {
   const el = document.getElementById('konto-perioder-liste');
   const allePerioder = [...data.perioder].sort((a, b) => b.startDato.localeCompare(a.startDato));
   const alleBetalinger = [...(data.betalinger || [])].sort((a, b) => b.dato.localeCompare(a.dato));
+  const alleOverforinger = [...(data.overforinger || [])].sort((a, b) => b.dato.localeCompare(a.dato));
 
-  if (allePerioder.length === 0 && alleBetalinger.length === 0) {
+  if (allePerioder.length === 0 && alleBetalinger.length === 0 && alleOverforinger.length === 0) {
     el.innerHTML = '<div class="empty-state">Ingen perioder eller betalinger</div>';
     return;
   }
 
   const alleRader = [
     ...allePerioder.map(p => ({ ...p, type: 'periode', dato: p.startDato, belop: p.mottatt })),
-    ...alleBetalinger.map(b => ({ ...b, type: 'betaling' }))
+    ...alleBetalinger.map(b => ({ ...b, type: 'betaling' })),
+    ...alleOverforinger.map(o => ({ ...o, type: 'overforing', belop: o.belop }))
   ].sort((a, b) => b.dato.localeCompare(a.dato));
 
-  el.innerHTML = alleRader.map(r => `
+  el.innerHTML = alleRader.map(r => {
+    let icon = '💰', detail = r.fra ? escapeHtml(r.fra) : 'Betaling mottatt', belopTxt = formatKr(r.belop), belopColor = 'var(--green)';
+    if (r.type === 'periode') {
+      icon = '📅';
+      detail = r.gjeldTrukket
+        ? `Ny periode (${formatKr(r.gjeldTrukket)} gjeld trukket fra ${formatKr(r.bruttoMottatt)} brutto)`
+        : 'Ny periode';
+    } else if (r.type === 'overforing') {
+      icon = '🏦';
+      detail = `Flyttet til ${r.tilManad} sin inngående saldo (budsjett-appen)`;
+      belopColor = 'var(--muted)';
+      belopTxt = '-' + formatKr(r.belop);
+    }
+    const slettFn = r.type === 'periode' ? `slettPeriodeById('${r.id}')`
+      : r.type === 'overforing' ? `slettOverforing('${r.id}')`
+      : `slettBetaling('${r.id}')`;
+    return `
     <div class="filling-item">
       <div class="filling-left">
-        <div class="filling-icon">${r.type === 'periode' ? '📅' : '💰'}</div>
+        <div class="filling-icon">${icon}</div>
         <div>
           <div class="filling-date">${formatDate(r.dato)}</div>
-          <div class="filling-detail">${r.type === 'periode' ? 'Ny periode' : (r.fra ? escapeHtml(r.fra) : 'Betaling mottatt')}</div>
+          <div class="filling-detail">${detail}</div>
         </div>
       </div>
       <div class="filling-right" style="display:flex;align-items:center">
         <div>
-          <div class="filling-cost" style="color:var(--green)">${formatKr(r.belop)}</div>
+          <div class="filling-cost" style="color:${belopColor}">${belopTxt}</div>
         </div>
-        <button class="delete-btn" onclick="${r.type === 'periode' ? `slettPeriodeById('${r.id}')` : `slettBetaling('${r.id}')`}">✕</button>
+        <button class="delete-btn" onclick="${slettFn}">✕</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function slettOverforing(id) {
+  data.overforinger = (data.overforinger || []).filter(o => o.id !== id);
+  saveData();
+  renderAll();
+  showToast('Overføring slettet lokalt (husk: tallet i budsjett-appen må evt. rettes manuelt)');
 }
 
 // ─── PERIODE ────────────────────────────────────────────
@@ -1069,17 +1226,50 @@ function openPeriodeModal() {
     : toDateString(new Date());
   document.getElementById('p-dato').value = earliest;
   document.getElementById('p-mottatt').value = '';
+  document.getElementById('p-gjeld').value = '';
 
+  periodeOverskuddValg = 'buffer';
   const { surplus } = getTotals();
   const infoEl = document.getElementById('periode-overskudd-info');
+  const valgEl = document.getElementById('periode-overskudd-valg');
   if (surplus > 0) {
     infoEl.textContent = `💰 Du har allerede ${formatKr(surplus)} i overskudd fra tidligere — dette føres automatisk over til den nye perioden, du behøver ikke legge det inn på nytt. Den nye perioden går derfor ikke i minus selv om du fyller mer enn det du legger inn her.`;
+    infoEl.style.display = 'block';
+    valgEl.style.display = 'block';
+    oppdaterOverskuddValgUI();
+  } else {
+    infoEl.style.display = 'none';
+    valgEl.style.display = 'none';
+  }
+
+  document.getElementById('periode-modal').classList.add('open');
+}
+
+function oppdaterOverskuddValgUI() {
+  const bufferBtn = document.getElementById('btn-valg-buffer');
+  const saldoBtn  = document.getElementById('btn-valg-saldo');
+  bufferBtn.classList.toggle('btn-choice-active', periodeOverskuddValg === 'buffer');
+  saldoBtn.classList.toggle('btn-choice-active', periodeOverskuddValg === 'saldo');
+
+  const infoEl = document.getElementById('periode-saldo-info');
+  if (periodeOverskuddValg === 'saldo') {
+    const dato = document.getElementById('p-dato').value || toDateString(new Date());
+    const manad = nextMonthKey(dato);
+    infoEl.textContent = `Overskuddet flyttes til inngående saldo for ${manad} i budsjett-appen, og fjernes herfra.`;
     infoEl.style.display = 'block';
   } else {
     infoEl.style.display = 'none';
   }
+}
 
-  document.getElementById('periode-modal').classList.add('open');
+function velgOverskuddBuffer() {
+  periodeOverskuddValg = 'buffer';
+  oppdaterOverskuddValgUI();
+}
+
+function velgOverskuddSaldo() {
+  periodeOverskuddValg = 'saldo';
+  oppdaterOverskuddValgUI();
 }
 
 function closePeriodeModal(e) {
@@ -1155,13 +1345,44 @@ function closeSlettPeriodeModal(e) {
 
 async function lagrePeriode() {
   const dato = document.getElementById('p-dato').value;
-  const mottatt = parseFloat(document.getElementById('p-mottatt').value);
-  if (!dato || !mottatt) { showToast('Fyll inn begge felt'); return; }
-  data.perioder.push({ id: uuid(), startDato: dato, mottatt });
+  const bruttoMottatt = parseFloat(document.getElementById('p-mottatt').value);
+  const gjeld = parseFloat(document.getElementById('p-gjeld').value) || 0;
+  if (!dato || !bruttoMottatt) { showToast('Fyll inn dato og beløp'); return; }
+  if (gjeld > bruttoMottatt) { showToast('Gjeld kan ikke være mer enn beløpet'); return; }
+
+  const nettoMottatt = Math.round((bruttoMottatt - gjeld) * 100) / 100;
+  const periode = { id: uuid(), startDato: dato, mottatt: nettoMottatt };
+  if (gjeld > 0) {
+    periode.bruttoMottatt = bruttoMottatt;
+    periode.gjeldTrukket = gjeld;
+  }
+  data.perioder.push(periode);
+
+  // Overskudd fra forrige periode flyttes til budsjett-appens inngående saldo hvis valgt
+  let saldoFlyttet = null;
+  if (periodeOverskuddValg === 'saldo') {
+    const { surplus } = getTotals();
+    if (surplus > 0) {
+      const manad = nextMonthKey(dato);
+      if (!data.overforinger) data.overforinger = [];
+      saldoFlyttet = { id: uuid(), dato, belop: surplus, tilManad: manad };
+      data.overforinger.push(saldoFlyttet);
+    }
+  }
+
   saveData();
   renderAll();
   closePeriodeModal();
   showToast('✓ Ny periode startet');
+
+  if (gjeld > 0) {
+    const ok = await pushGjeldSomInntekt(dato, gjeld);
+    showToast(ok ? `✓ ${formatKr(gjeld)} gjeld lagt inn som inntekt i budsjett-appen` : '⚠ Kunne ikke skrive gjeld til budsjett-appen');
+  }
+  if (saldoFlyttet) {
+    const ok = await pushTilInngaendeSaldo(saldoFlyttet.tilManad, saldoFlyttet.belop);
+    showToast(ok ? `✓ ${formatKr(saldoFlyttet.belop)} flyttet til ${saldoFlyttet.tilManad} sin inngående saldo` : '⚠ Kunne ikke skrive til budsjett-appen');
+  }
 }
 
 // ─── TABS & UTILS ───────────────────────────────────────
