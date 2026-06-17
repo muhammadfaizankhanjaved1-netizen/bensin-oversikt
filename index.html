@@ -783,6 +783,21 @@ async function lagreBudsjettRecord(record) {
   });
 }
 
+// Synkroniserer bensinFaktisk for en måned (YYYY-MM) til budsjett-appen automatisk.
+async function pushBensinFaktisk(manad) {
+  try {
+    const faktisk = Math.round(
+      data.fyllinger
+        .filter(f => f.dato && f.dato.startsWith(manad))
+        .reduce((s, f) => s + (parseFloat(f.kostnad) || 0), 0) * 100
+    ) / 100;
+    const record = await hentBudsjettRecord();
+    if (!record.months[manad]) record.months[manad] = defaultBudsjettMonth();
+    record.months[manad].bensinFaktisk = faktisk;
+    await lagreBudsjettRecord(record);
+  } catch (e) {}
+}
+
 // Flytter et overskudd til budsjett-appens incomingSaldo for en gitt måned (YYYY-MM).
 async function pushTilInngaendeSaldo(manad, belop) {
   try {
@@ -1075,6 +1090,7 @@ async function lagreFylling() {
   saveData();
   renderAll();
   showToast('✓ Fylling lagret');
+  pushBensinFaktisk(dato.slice(0, 7));
 
   document.getElementById('f-stasjon').value = '';
   document.getElementById('f-pris').value = '';
@@ -1090,12 +1106,14 @@ function slettFylling(id) {
   if (!f) return;
   document.getElementById('slett-info').textContent = `${formatDate(f.dato)} — ${f.liter.toFixed(1)} L — ${formatKr(f.kostnad)}`;
   document.getElementById('slett-bekreft').onclick = () => {
+    const manad = f.dato.slice(0, 7);
     data.fyllinger = data.fyllinger.filter(f => f.id !== id);
     deleteBildeLocal(id);
     saveData();
     renderAll();
     closeSlettModal();
     showToast('Fylling slettet');
+    pushBensinFaktisk(manad);
   };
   document.getElementById('slett-modal').classList.add('open');
 }
