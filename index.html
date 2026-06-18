@@ -355,7 +355,7 @@
       <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Hva skal skje med overskuddet?</div>
       <div style="display:flex;gap:8px">
         <button type="button" class="btn-secondary" id="btn-valg-buffer" style="flex:1" onclick="velgOverskuddBuffer()">Behold i buffer</button>
-        <button type="button" class="btn-secondary" id="btn-valg-saldo" style="flex:1" onclick="velgOverskuddSaldo()">Flytt til inngående saldo</button>
+        <button type="button" class="btn-secondary" id="btn-valg-saldo" style="flex:1" onclick="velgOverskuddSaldo()">Flytt til budsjett (f.o.m. 11.)</button>
       </div>
       <div id="periode-saldo-info" style="display:none;font-size:11px;color:var(--muted);margin-top:6px"></div>
     </div>
@@ -798,12 +798,14 @@ async function pushBensinFaktisk(manad) {
   } catch (e) {}
 }
 
-// Flytter et overskudd til budsjett-appens incomingSaldo for en gitt måned (YYYY-MM).
+// Overskudd lagres som bensinCarryover i budsjett-appen for neste måned.
+// Aktiveres automatisk f.o.m. 11. (calcBal i budsjett-appen ignorerer det før det).
+// Rører IKKE incomingSaldo — den er et stabilt snapshot og skal aldri endres herfra.
 async function pushTilInngaendeSaldo(manad, belop) {
   try {
     const record = await hentBudsjettRecord();
     if (!record.months[manad]) record.months[manad] = defaultBudsjettMonth();
-    record.months[manad].incomingSaldo = Math.round(((parseFloat(record.months[manad].incomingSaldo) || 0) + belop) * 100) / 100;
+    record.months[manad].bensinCarryover = Math.round(((parseFloat(record.months[manad].bensinCarryover) || 0) + belop) * 100) / 100;
     await lagreBudsjettRecord(record);
     return true;
   } catch (e) { return false; }
@@ -1199,7 +1201,7 @@ function renderKonto() {
         : 'Ny periode';
     } else if (r.type === 'overforing') {
       icon = '🏦';
-      detail = `Flyttet til ${r.tilManad} sin inngående saldo (budsjett-appen)`;
+      detail = `Bensin-carryover til ${r.tilManad} i budsjett-appen (aktiveres 11.)`;
       belopColor = 'var(--muted)';
       belopTxt = '-' + formatKr(r.belop);
     }
@@ -1273,7 +1275,7 @@ function oppdaterOverskuddValgUI() {
   if (periodeOverskuddValg === 'saldo') {
     const dato = document.getElementById('p-dato').value || toDateString(new Date());
     const manad = nextMonthKey(dato);
-    infoEl.textContent = `Overskuddet flyttes til inngående saldo for ${manad} i budsjett-appen, og fjernes herfra.`;
+    infoEl.textContent = `Overskuddet lagres som bensin-carryover for ${manad} i budsjett-appen og teller med f.o.m. den 11.`;
     infoEl.style.display = 'block';
   } else {
     infoEl.style.display = 'none';
